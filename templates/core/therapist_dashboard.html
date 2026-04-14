@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Top rating banner -->
+{% if avg_therapist_rating %}
+<div class="d-flex align-items-center gap-4 flex-wrap mb-4 px-4 py-3 rounded-3 border" style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(59,130,246,0.1));border-color:var(--border) !important;">
+    <div>
+        <p class="mb-1 text-uppercase" style="font-size:0.75rem;color:var(--text-muted);letter-spacing:1px;">
+            Your Average Patient Rating</p>
+        <div class="d-flex align-items-center gap-2">
+            {% for i in "12345" %}
+            {% if forloop.counter <= avg_therapist_rating %}<span style="color:var(--accent);font-size:1.3rem;">★</span>
+            {% else %}<span style="color:var(--border);font-size:1.3rem;">★</span>
+            {% endif %}
+            {% endfor %}
+            <span class="fw-bold ms-1" style="font-size:1.4rem;color:var(--accent);">{{ avg_therapist_rating }}</span>
+            <span style="color:var(--text-muted);font-size:0.85rem;">/ 5 &bull; {{ reviews.count }} review{{ reviews.count|pluralize }}</span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="dashboard-grid">
+    <!-- Roster and Schedule -->
+    <div>
+        <h2 class="mb-4">My Schedule</h2>
+
+        <div class="glass-card mb-4">
+            <h3>Upcoming Appointments</h3>
+            {% for appt in upcoming_appointments %}
+            <div class="py-3 border-bottom" style="border-color:var(--border) !important;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong style="color:var(--primary);">{{ appt.date|date:"F d, Y" }}</strong> at {{ appt.time_slot|time:"h:i A" }}
+                        <div class="mt-1" style="font-size:0.85rem;color:var(--text-muted);">
+                            Patient: {{ appt.patient.username }}
+                        </div>
+                    </div>
+                    <div>
+                        <span class="badge badge-status d-block mb-2">{{ appt.get_status_display }}</span>
+                        {% if appt.status == 'scheduled' %}
+                        <form method="post" action="{% url 'update_appointment_status' appt.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" name="status" value="in_progress" class="btn btn-primary" style="padding:0.3rem 0.6rem;font-size:0.8rem;">Start Session</button>
+                        </form>
+                        {% elif appt.status == 'in_progress' %}
+                        <a href="{% url 'submit_diagnosis' appt.id %}" class="btn btn-outline" style="padding:0.3rem 0.6rem;font-size:0.8rem;">Complete &amp; Diagnose</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="py-3" style="color:var(--text-muted);">No upcoming appointments assigned.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Active Treatment Cycles & Attendance Heatmaps -->
+    <div>
+        <h2 class="mb-4">Active Patient Cycles</h2>
+        {% for cycle in active_cycles %}
+        <div class="glass-card mb-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h3 class="mb-1" style="color:var(--primary);">{{ cycle.patient.username }}</h3>
+                    <p class="mb-0" style="font-size:0.85rem;color:var(--text-muted);">
+                        {{ cycle.treatment_plan.duration_days }} days &bull; Started {{ cycle.start_date|date:"M d" }}
+                    </p>
+                </div>
+                <span class="badge badge-recommended">{{ cycle.treatment_plan.name }}</span>
+            </div>
+
+            <h4 class="mb-2" style="font-size:0.9rem;color:var(--text-muted);">Quick Attendance Heatmap</h4>
+            <div class="heatmap mb-4">
+                {% for att in cycle.attendances.all|dictsort:"date" %}
+                <div class="heatmap-cell"
+                    onclick="toggleAttendance({{ cycle.id }}, '{{ att.date|date:'Y-m-d' }}', this)"
+                    title="{{ att.date|date:'M d' }}: Click to toggle quick attendance"
+                    data-attended="{{ att.is_attended|lower }}">
+                    {{ forloop.counter }}
+                </div>
+                {% empty %}
+                <span style="font-size:0.8rem;color:var(--text-muted);">No sessions scheduled yet</span>
+                {% endfor %}
+            </div>
+
+            <h4 class="mb-2" style="font-size:0.9rem;color:var(--text-muted);">Daily Sessions (Detailed Vitals)</h4>
+            <div class="d-flex flex-column gap-2 mb-3">
+                {% for att in cycle.attendances.all|dictsort:"date" %}
+                <details class="rounded-3 border" style="background:rgba(15,23,42,0.4);border-color:var(--border) !important;">
+                    <summary class="d-flex justify-content-between align-items-center px-3 py-3 fw-medium" style="cursor:pointer;font-size:0.9rem;list-style:none;">
+                        <span>Day {{ forloop.counter }} &bull; {{ att.date|date:'M d, Y' }}</span>
+                        <span class="badge" style="{% if att.is_attended %}background:var(--primary);color:white;{% else %}background:var(--booked-slot);color:var(--text-muted);{% endif %}">
+                            {% if att.is_attended %}Attended ✓{% else %}Pending{% endif %}
+                        </span>
+                    </summary>
+                    <div class="px-3 py-3 border-top" style="border-color:var(--border) !important;background:rgba(30,41,59,0.3);">
+                        <form method="post" action="{% url 'mark_attendance' cycle.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="date" value="{{ att.date|date:'Y-m-d' }}">
+                            <input type="hidden" name="action" value="update_vitals">
+
+                            <div class="mb-3">
+                                <label class="d-flex align-items-center gap-2" style="cursor:pointer;color:var(--text-main);">
+                                    <input type="checkbox" name="is_attended" style="width:auto;transform:scale(1.2);" {% if att.is_attended %}checked{% endif %}>
+                                    Patient attended this session
+                                </label>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col">
+                                    <label style="font-size:0.8rem;">Avg BP</label>
+                                    <input type="text" name="avg_bp" value="{{ att.avg_bp|default_if_none:'' }}" placeholder="120/80" style="padding:0.5rem;font-size:0.85rem;">
+                                </div>
+                                <div class="col">
+                                    <label style="font-size:0.8rem;">Weight (kg)</label>
+                                    <input type="number" step="0.1" name="weight_kg" value="{{ att.weight_kg|default_if_none:'' }}" placeholder="65.5" style="padding:0.5rem;font-size:0.85rem;">
+                                </div>
+                                <div class="col">
+                                    <label style="font-size:0.8rem;">Pulse (bpm)</label>
+                                    <input type="number" name="pulse_bpm" value="{{ att.pulse_bpm|default_if_none:'' }}" placeholder="72" style="padding:0.5rem;font-size:0.85rem;">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label style="font-size:0.8rem;">Session Notes</label>
+                                <textarea name="session_notes" rows="2" placeholder="Clinical notes... (tolerated treatment well, etc.)" style="padding:0.5rem;font-size:0.85rem;">{{ att.session_notes|default_if_none:'' }}</textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100" style="padding:0.4rem 1rem;font-size:0.85rem;">Save Day {{ forloop.counter }}</button>
+                        </form>
+                    </div>
+                </details>
+                {% empty %}
+                <p style="color:var(--text-muted);font-size:0.8rem;">No days generated yet.</p>
+                {% endfor %}
+            </div>
+
+            <!-- End Treatment -->
+            <div class="mt-4 pt-3 border-top" style="border-color:var(--border) !important;">
+                <form method="post" action="{% url 'end_treatment' cycle.id %}"
+                    onsubmit="return confirm('End treatment cycle for {{ cycle.patient.username }}? The patient will then submit their feedback.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline w-100" style="color:var(--accent);border-color:var(--accent);">
+                        ✓ Mark Complete &amp; End Cycle
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="glass-card text-center py-5">
+            <p style="color:var(--text-muted);">No active patient cycles at the moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ==================== Patient Reviews Section ==================== -->
+{% if reviews %}
+<div class="mt-5">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <h2 class="mb-0">Patient Feedback</h2>
+        <span class="badge rounded-pill" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--accent);padding:0.2rem 0.7rem;font-size:0.8rem;">
+            {{ reviews.count }} review{{ reviews.count|pluralize }}
+        </span>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+        {% for review in reviews %}
+        <div class="col">
+            <div class="glass-card h-100 p-4">
+                <!-- Header: patient name + plan + date -->
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h4 class="mb-1" style="font-size:0.95rem;color:var(--primary);">{{ review.patient.username }}</h4>
+                        <p class="mb-0" style="font-size:0.78rem;color:var(--text-muted);">{{ review.treatment_plan.name }} &bull; {{ review.start_date|date:"M Y" }}</p>
+                    </div>
+                    <!-- Star ratings -->
+                    <div class="text-end">
+                        <div class="d-flex gap-1 justify-content-end">
+                            {% for i in "12345" %}
+                            {% if review.therapist_rating and forloop.counter <= review.therapist_rating %}<span style="color:var(--accent);font-size:0.95rem;">★</span>
+                            {% else %}<span style="color:var(--border);font-size:0.95rem;">★</span>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <p class="mt-1 mb-0" style="font-size:0.75rem;color:var(--text-muted);">
+                            Overall:
+                            {% if review.overall_rating %}
+                            {% for i in "12345" %}{% if forloop.counter <= review.overall_rating %}★{% else %}☆{% endif %}{% endfor %}
+                            {% else %} — {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <!-- Feedback text -->
+                <p class="mb-0" style="font-size:0.88rem;color:var(--text-muted);font-style:italic;line-height:1.55;border-left:3px solid var(--primary);padding-left:0.75rem;">
+                    "{{ review.feedback_text }}"
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleAttendance(cycleId, dateStr, element) {
+        const formData = new FormData();
+        formData.append('date', dateStr);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        fetch(`/therapist/cycle/${cycleId}/attendance/`, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    element.setAttribute('data-attended', data.is_attended.toString());
+                }
+            });
+    }
+</script>
+{% endblock %}

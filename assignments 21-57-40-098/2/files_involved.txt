@@ -1,0 +1,34 @@
+# Assignment 2: Database Models, Migrations, and CRUD
+
+## Description
+This assignment covers the creation of the database models, managing migrations, and implementing the core CRUD (Create, Read, Update, Delete) functionality for the Panchkarma clinical cycle.
+
+## Files Involved
+
+### 1. Database Schema
+*   **core/models.py**: Definitions of `User`, `TreatmentPlan`, `Appointment`, `DiagnosisReport`, `TreatmentCycle`, and `Attendance` models.
+
+### 2. Migration History
+*   **core/migrations/0001_initial.py**: Initial schema creation.
+*   **core/migrations/0002_...**: Subsequent schema updates.
+
+### 3. Business Logic (CRUD)
+*   **core/views.py**: View functions like `signup`, `book_appointment`, `submit_diagnosis`, `update_attendance`, and `delete_notification`.
+
+### 4. Custom Model Logic
+*   **core/models.py**: `__str__` methods for customized object representations.
+
+## Key Code Snippets
+
+### Model Relationship (core/models.py)
+```python
+class Appointment(models.Model):
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments')
+    # ...
+```
+
+### Custom String Representation (core/models.py)
+```python
+def __str__(self):
+    return f"{self.name} ({self.duration_days} days)"
+```

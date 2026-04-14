@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h2 class="mb-0">Center Overview</h2>
+        <button id="addUserBtn" onclick="document.getElementById('addUserModal').style.display='flex'" class="btn btn-primary d-flex align-items-center gap-2" style="font-size:0.9rem;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Add User
+        </button>
+    </div>
+
+
+
+    <!-- Stats Cards -->
+    <div class="dashboard-grid mb-4" style="grid-template-columns: repeat(4, 1fr);">
+        <div class="glass-card text-center" style="border-bottom: 4px solid var(--primary);">
+            <h4 style="color: var(--text-muted);" class="mb-2">Completed Cycles</h4>
+            <h2 style="font-size: 2.5rem;" class="mb-0">{{ total_completed }}</h2>
+        </div>
+        <div class="glass-card text-center" style="border-bottom: 4px solid var(--accent);">
+            <h4 style="color: var(--text-muted);" class="mb-2">Avg Satisfaction</h4>
+            <h2 style="font-size: 2.5rem; color: var(--accent);" class="mb-0">{{ avg_rating }} <span style="font-size: 1.5rem;">/ 5</span></h2>
+        </div>
+        <div class="glass-card text-center" style="border-bottom: 4px solid var(--secondary);">
+            <h4 style="color: var(--text-muted);" class="mb-2">Active Therapists</h4>
+            <h2 style="font-size: 2.5rem;" class="mb-0">{{ therapists.count }}</h2>
+        </div>
+        <div class="glass-card text-center" style="border-bottom: 4px solid #c084fc;">
+            <h4 style="color: var(--text-muted);" class="mb-2">Total Patients</h4>
+            <h2 style="font-size: 2.5rem; color: #c084fc;" class="mb-0">{{ patients.count }}</h2>
+        </div>
+    </div>
+
+    <!-- ===== MASTER SCHEDULE (Accordion per patient) ===== -->
+    <div class="glass-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h3 class="mb-0">Master Schedule &amp; Assignments</h3>
+            {% if unassigned_count > 0 %}
+            <span class="badge rounded-pill" style="background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;padding:0.3rem 0.8rem;font-size:0.8rem;font-weight:600;">
+                {{ unassigned_count }} unassigned appointment{{ unassigned_count|pluralize }}
+            </span>
+            {% endif %}
+        </div>
+        <div class="overflow-auto">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Patient</th>
+                        <th>Latest Appointment</th>
+                        <th>Status</th>
+                        <th>Assigned Therapist</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in consolidated_appointments %}
+                    <!-- Parent Row -->
+                    <tr style="cursor:{% if row.is_multi %}pointer{% else %}default{% endif %};"
+                        {% if row.is_multi %}onclick="toggleSubRows('sub-{{ row.latest.patient.id }}')" {% endif %}>
+                        <td class="text-center" style="width:30px;color:var(--text-muted);">
+                            {% if row.is_multi %}
+                            <svg id="chevron-{{ row.latest.patient.id }}" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="transition:transform 0.2s;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ row.latest.patient.username }}</strong>
+                            {% if row.is_multi %}<br><small style="color:var(--text-muted);">{{ row.all|length }} appointment{{ row.all|length|pluralize }}</small>{% endif %}
+                        </td>
+                        <td>{{ row.latest.date|date:"M d, Y" }}<br><small style="color:var(--text-muted);">{{ row.latest.time_slot|time:"h:i A" }}</small></td>
+                        <td><span class="badge badge-status">{{ row.latest.get_status_display }}</span></td>
+                        <td>{{ row.latest.therapist.username|default:"Unassigned" }}</td>
+                        <td>
+                            {% if row.latest.status == 'scheduled' %}
+                                {% if row.latest.therapist %}
+                                    <div>
+                                        <span id="assigned-badge-{{ row.latest.id }}" class="d-inline-flex align-items-center gap-1 badge rounded-pill" style="background:rgba(16,185,129,0.15);border:1px solid var(--primary);color:var(--primary);padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:600;">
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                            Assigned
+                                        </span>
+                                        <button onclick="document.getElementById('reassign-{{ row.latest.id }}').style.display='flex'; this.style.display='none';" class="d-block mt-1 p-0 border-0 bg-transparent" style="color:var(--text-muted);font-size:0.75rem;cursor:pointer;">↻ Reassign</button>
+                                        <form id="reassign-{{ row.latest.id }}" method="post" action="{% url 'assign_therapist' %}" class="d-none gap-2 mt-1" onclick="event.stopPropagation()">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="appointment_id" value="{{ row.latest.id }}">
+                                            <select name="therapist_id" class="form-select form-select-sm" style="max-width:130px;background:rgba(0,0,0,0.3);border-color:var(--border);color:var(--text-main);">
+                                                {% for t in therapists %}<option value="{{ t.id }}" {% if row.latest.therapist.id == t.id %}selected{% endif %}>{{ t.username }}</option>{% endfor %}
+                                            </select>
+                                            <button class="btn btn-outline btn-sm">Save</button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <!-- Unassigned: prominently show assign form -->
+                                    <form method="post" action="{% url 'assign_therapist' %}" class="d-flex gap-2 align-items-center" onclick="event.stopPropagation()">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="appointment_id" value="{{ row.latest.id }}">
+                                        <select name="therapist_id" class="form-select form-select-sm" style="max-width:150px;background:rgba(0,0,0,0.3);border-color:var(--border);color:var(--text-main);">
+                                            <option value="">Select Therapist</option>
+                                            {% for t in therapists %}<option value="{{ t.id }}">{{ t.username }}</option>{% endfor %}
+                                        </select>
+                                        <button class="btn btn-primary btn-sm">Assign</button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <span style="color:var(--text-muted);font-size:0.85rem;">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    <!-- Sub-rows for repeat patients -->
+                    {% if row.is_multi %}
+                    <tr id="sub-{{ row.latest.patient.id }}" style="display:none;">
+                        <td colspan="6" class="p-0 border-0">
+                            <div class="mx-4 mb-2 border rounded-3 overflow-hidden" style="border-color:var(--border) !important;">
+                                <table class="w-100" style="border-collapse:collapse;">
+                                    <thead>
+                                        <tr style="background:rgba(255,255,255,0.02);">
+                                            <th class="px-3 py-2 text-start fw-normal" style="font-size:0.8rem;color:var(--text-muted);">Date</th>
+                                            <th class="px-3 py-2 text-start fw-normal" style="font-size:0.8rem;color:var(--text-muted);">Time</th>
+                                            <th class="px-3 py-2 text-start fw-normal" style="font-size:0.8rem;color:var(--text-muted);">Status</th>
+                                            <th class="px-3 py-2 text-start fw-normal" style="font-size:0.8rem;color:var(--text-muted);">Therapist</th>
+                                            <th class="px-3 py-2 text-start fw-normal" style="font-size:0.8rem;color:var(--text-muted);">Attendance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for appt in row.all %}
+                                        <tr style="border-top:1px solid var(--border);">
+                                            <td class="px-3 py-2" style="font-size:0.85rem;">{{ appt.date|date:"M d, Y" }}</td>
+                                            <td class="px-3 py-2" style="font-size:0.85rem;color:var(--text-muted);">{{ appt.time_slot|time:"h:i A" }}</td>
+                                            <td class="px-3 py-2"><span class="badge badge-status" style="font-size:0.75rem;">{{ appt.get_status_display }}</span></td>
+                                            <td class="px-3 py-2" style="font-size:0.85rem;color:var(--text-muted);">{{ appt.therapist.username|default:"Unassigned" }}</td>
+                                            <td class="px-3 py-2">
+                                                {% if appt.status == 'completed' %}
+                                                    <span class="fw-semibold" style="color:var(--primary);font-size:0.8rem;">
+                                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="display:inline;vertical-align:middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                                        Success
+                                                    </span>
+                                                {% elif appt.status == 'cancelled' %}
+                                                    <span class="fw-semibold" style="color:#ef4444;font-size:0.8rem;">
+                                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="display:inline;vertical-align:middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                        Failure
+                                                    </span>
+                                                {% else %}
+                                                    <span style="color:var(--text-muted);font-size:0.8rem;">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center py-4" style="color:var(--text-muted);">No appointments found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== THERAPIST MANAGEMENT ===== -->
+    <div class="glass-card mb-4">
+        <h3 class="mb-4">Therapist Management</h3>
+        <div class="overflow-auto">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Full Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in therapists %}
+                    <tr>
+                        <td><strong>{{ t.username }}</strong></td>
+                        <td style="color:var(--text-muted);">{{ t.email|default:"—" }}</td>
+                        <td style="color:var(--text-muted);">{{ t.get_full_name|default:"—" }}</td>
+                        <td>
+                            <form method="post" action="{% url 'remove_user' t.id %}" onsubmit="return confirm('Remove therapist {{ t.username }}? This action cannot be undone.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm" style="background:transparent;border:1px solid #ef4444;color:#ef4444;">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center py-4" style="color:var(--text-muted);">No therapists registered.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== PATIENT MANAGEMENT ===== -->
+    <div class="glass-card">
+        <h3 class="mb-4">Patient Management</h3>
+        <div class="overflow-auto">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Full Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in patients %}
+                    <tr>
+                        <td><strong>{{ p.username }}</strong></td>
+                        <td style="color:var(--text-muted);">{{ p.email|default:"—" }}</td>
+                        <td style="color:var(--text-muted);">{{ p.get_full_name|default:"—" }}</td>
+                        <td>
+                            <form method="post" action="{% url 'remove_user' p.id %}" onsubmit="return confirm('Remove patient {{ p.username }}? This will also delete their appointments and treatment history.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm" style="background:transparent;border:1px solid #ef4444;color:#ef4444;">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center py-4" style="color:var(--text-muted);">No patients registered.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ADD USER MODAL ===== -->
+<div id="addUserModal" class="position-fixed top-0 start-0 w-100 h-100 justify-content-center align-items-center p-3" style="display:none;background:rgba(0,0,0,0.8);z-index:9999;">
+    <div class="glass-card" style="max-width:460px;width:100%;background:var(--bg-card);border:2px solid var(--primary);">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0" style="color:var(--primary);">Add New User</h3>
+            <button onclick="document.getElementById('addUserModal').style.display='none'" class="btn p-0 border-0 bg-transparent" style="color:var(--text-muted);font-size:1.3rem;cursor:pointer;">✕</button>
+        </div>
+        <form method="post" action="{% url 'add_user' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" required placeholder="e.g. dr_sharma">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="email@example.com">
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select name="role">
+                    <option value="therapist">Therapist</option>
+                    <option value="patient">Patient</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password1" required placeholder="Enter password">
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" name="password2" required placeholder="Repeat password">
+            </div>
+            <div class="d-flex gap-3">
+                <button type="button" onclick="document.getElementById('addUserModal').style.display='none'" class="btn btn-outline flex-fill">Cancel</button>
+                <button type="submit" class="btn btn-primary flex-fill">Create User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    function toggleSubRows(rowId) {
+        const sub = document.getElementById(rowId);
+        const patientId = rowId.replace('sub-', '');
+        const chevron = document.getElementById('chevron-' + patientId);
+        if (sub) {
+            const isHidden = sub.style.display === 'none' || sub.style.display === '';
+            sub.style.display = isHidden ? 'table-row' : 'none';
+            if (chevron) {
+                chevron.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+            }
+        }
+    }
+</script>
+{% endblock %}

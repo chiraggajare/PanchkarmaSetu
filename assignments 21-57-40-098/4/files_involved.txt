@@ -1,0 +1,38 @@
+# Assignment 4: Forms, Validation, and Save to Database
+
+## Description
+This assignment covers the creation of Django forms, implementing custom validation logic, and processing form data for safe storage in the database.
+
+## Files Involved
+
+### 1. Form Definitions
+*   **core/forms.py**: Definitions for `CustomUserCreationForm`, `IntakeForm`, `DiagnosisReportForm`, and `FeedbackForm`.
+
+### 2. Validation Logic
+*   **core/views.py**: Specific validation logic (e.g., checking for appointment time-slot conflicts) and clean data processing.
+
+### 3. Template Integration
+*   **templates/core/signup.html**: Form rendering for new users.
+*   **templates/core/book_appointment.html**: Functional intake form with consent modal.
+*   **templates/core/submit_diagnosis.html**: Structured clinical diagnosis form.
+
+### 4. Data Persistence
+*   **core/views.py**: Use of `form.save()` to persist data to the models.
+
+## Key Code Snippets
+
+### Form Validation (core/views.py)
+```python
+if form.is_valid():
+    appointment = form.save(commit=False)
+    # ... additional checks ...
+    appointment.save()
+```
+
+### Form Definition (core/forms.py)
+```python
+class IntakeForm(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = ['height', 'weight', 'age', 'prior_health_issues', 'date', 'time_slot']
+```

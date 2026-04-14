@@ -1,0 +1,12 @@
+Task ID,Task Name,Category,Start Date,End Date,Duration (Days),Status,Progress (%),Assigned Role
+T1,Requirements & System Design,Planning,2026-02-01,2026-02-07,7,Completed,100,Project Manager
+T2,Database Schema Design,Planning,2026-02-08,2026-02-14,7,Completed,100,Database Designer
+T3,Auth & Role-Based Access,Core Dev,2026-02-15,2026-02-19,5,Completed,100,Backend Developer
+T4,Appointment Booking & Slot Logic,Core Dev,2026-02-20,2026-03-01,10,Completed,100,Backend Developer
+T5,Therapist Workflow: Diagnosis,Core Dev,2026-03-02,2026-03-08,7,In Progress,80,Backend Developer
+T6,Treatment Cycle & Attendance,Core Dev,2026-03-09,2026-03-18,10,Scheduled,0,Backend Developer
+T7,PDF Utility & Report Generation,Specialized,2026-03-19,2026-03-25,7,Scheduled,0,Backend Developer
+T8,Notification & Feedback System,Specialized,2026-03-26,2026-03-30,5,Scheduled,0,Backend Developer
+T9,UI Refinement (Bootstrap Migration),Polish,2026-03-09,2026-03-22,14,In Progress,60,Frontend Developer
+T10,Final QA & Bug Fixing,QA,2026-03-31,2026-04-06,7,Scheduled,0,QA / Tester
+T11,Deployment Readiness,Deployment,2026-04-07,2026-04-09,3,Scheduled,0,Project Manager

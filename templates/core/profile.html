@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width:600px;" class="mx-auto">
+    <h2 class="mb-5">My Profile</h2>
+
+    <div class="glass-card mb-4">
+        <h3 class="mb-3" style="color:var(--primary);">Profile Information</h3>
+        <p class="mb-2"><strong style="color:var(--text-muted);">Username:</strong> {{ user.username }}</p>
+        <p class="mb-2"><strong style="color:var(--text-muted);">Email:</strong> {{ user.email|default:"None" }}</p>
+        <p class="mb-2"><strong style="color:var(--text-muted);">Role:</strong> {{ user.role|title }}</p>
+        <p class="mb-2"><strong style="color:var(--text-muted);">Joined:</strong> {{ user.date_joined|date:"F d, Y" }}</p>
+    </div>
+
+    <div class="glass-card mb-4">
+        <h3 class="mb-4" style="color:var(--primary);">Update Email</h3>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="change_email">
+            {% for field in email_form %}
+                <div class="form-group">
+                    <label for="{{ field.auto_id }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="mt-1" style="color:#ef4444;font-size:0.8rem;">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary w-100 mt-3">Update Email</button>
+        </form>
+    </div>
+
+    <div class="glass-card">
+        <h3 class="mb-4" style="color:var(--primary);">Change Password</h3>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="change_password">
+            {% for field in password_form %}
+                <div class="form-group">
+                    <label for="{{ field.auto_id }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="mt-1" style="color:#ef4444;font-size:0.8rem;">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary w-100 mt-3">Update Password</button>
+        </form>
+    </div>
+</div>{% endblock %}

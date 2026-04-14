@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width:500px;" class="mx-auto text-center">
+    <h2 class="mb-5" style="background:linear-gradient(135deg,var(--accent) 0%,var(--primary) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">End Cycle &amp; Share Feedback</h2>
+
+    <div class="glass-card text-start">
+        <p class="mb-4" style="color:var(--text-muted);">Congratulations on completing your {{ cycle.treatment_plan.name }} treatment cycle. Help us improve your experience!</p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Tell us about your experience</label>
+                {{ form.feedback_text }}
+            </div>
+
+            <div class="row g-3 mt-3">
+                <div class="col-6 form-group">
+                    <label style="color:var(--secondary);">Therapist Rating (1-5)</label>
+                    {{ form.therapist_rating }}
+                </div>
+
+                <div class="col-6 form-group">
+                    <label style="color:var(--primary);">Overall Rating (1-5)</label>
+                    {{ form.overall_rating }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mt-4">Submit &amp; End Cycle</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

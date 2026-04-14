@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto; text-align: center; padding-top: 2rem;">
+    <h2 style="margin-bottom: 1rem;">Complete Your Payment</h2>
+    
+    <div class="glass-card" style="margin-bottom: 2rem; border: 2px solid var(--accent);">
+        <h3 style="color: var(--primary); margin-bottom: 1rem;">Payment Simulator</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+            This is a development stub. Currently, there is no live payment gateway connected here.
+            <br><br>
+            <strong>"I have to implement this…"</strong>
+        </p>
+
+        <form method="post" style="display: flex; gap: 1rem; justify-content: center;">
+            {% csrf_token %}
+            <a href="{% url 'dashboard' %}" class="btn btn-outline" style="flex: 1;">Cancel</a>
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Simulate Payment Success</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

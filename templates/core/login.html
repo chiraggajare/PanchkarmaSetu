@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width:400px;" class="mx-auto mt-5 glass-card">
+    <h2 class="text-center mb-4">Welcome Back</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary w-100 mt-3">Login</button>
+    </form>
+    <p class="text-center mt-4 mb-0" style="color:var(--text-muted);font-size:0.9rem;">
+        Don't have an account? <a href="{% url 'signup' %}" style="color:var(--primary);">Sign up</a>
+    </p>
+</div>
+{% endblock %}

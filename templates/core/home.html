@@ -1,0 +1,360 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PanchkarmaSetu — Ancient Healing, Modern Care</title>
+    <meta name="description"
+        content="PanchkarmaSetu is a comprehensive Panchakarma management platform connecting patients with certified Ayurvedic therapists for personalized detoxification and healing journeys.">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+
+<body class="home-page">
+
+    <!-- ── NAV ── -->
+    <nav class="home-nav">
+        <div class="home-nav-inner">
+            <a href="{% url 'home' %}" class="nav-brand">Panchkarma<span>Setu</span></a>
+            <div class="nav-links">
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="nav-link-plain">Login</a>
+                <a href="{% url 'signup' %}" class="btn btn-primary">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── HERO ── -->
+    <section class="hero-section">
+        <div class="hero-glow hero-glow-1"></div>
+        <div class="hero-glow hero-glow-2"></div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i data-lucide="leaf" class="icon-inline"></i>
+                Rooted in Ayurveda. Powered by Technology.
+            </div>
+            <h1 class="hero-title">Healing That Knows<br><span class="gradient-text">Your Body.</span></h1>
+            <p class="hero-subtitle">
+                PanchkarmaSetu bridges ancient Panchakarma wisdom with a modern, seamless care experience —
+                from your very first diagnosis to your final recovery session.
+            </p>
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg hero-btn">Open My Dashboard</a>
+            {% else %}
+            <div class="hero-free-badge">
+                <i data-lucide="sparkles" class="icon-inline" style="color:var(--primary);"></i>
+                Initial Diagnosis is 100% Free
+            </div>
+            <div class="hero-cta-row">
+                <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">Begin Your Journey</a>
+                <a href="{% url 'login' %}" class="btn btn-outline btn-lg">Login</a>
+            </div>
+            {% endif %}
+
+            <div class="hero-stats">
+                <div class="stat-item"><strong>3</strong><span>Doshas Addressed</span></div>
+                <div class="stat-divider"></div>
+                <div class="stat-item"><strong>7–15</strong><span>Day Plans</span></div>
+                <div class="stat-divider"></div>
+                <div class="stat-item"><strong>100%</strong><span>Personalised</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── SATISFACTION STATS ── -->
+    <section class="section" id="statsSection">
+        <div class="section-inner centered">
+            <div class="section-label">By the Numbers</div>
+            <h2 class="section-title">Trusted Across India</h2>
+            <p class="section-subtitle">Real healing. Real numbers.</p>
+
+            <div class="stats-row justify-content-center">
+                <div class="stats-pill">
+                    <i data-lucide="heart" style="width:24px;height:24px;color:var(--accent);flex-shrink:0;"></i>
+                    <div>
+                        <div class="animated-counter" data-target="{{ satisfaction_rate }}" data-suffix="%">0</div>
+                        <div class="stats-pill-label">Patient Satisfaction</div>
+                    </div>
+                </div>
+                <div class="stats-pill-divider"></div>
+                <div class="stats-pill">
+                    <i data-lucide="users" style="width:24px;height:24px;color:var(--primary);flex-shrink:0;"></i>
+                    <div>
+                        <div class="animated-counter" data-target="{{ patients_treated }}" data-suffix="+">0</div>
+                        <div class="stats-pill-label">Patients Treated</div>
+                    </div>
+                </div>
+                <div class="stats-pill-divider"></div>
+                <div class="stats-pill">
+                    <i data-lucide="trending-up" style="width:24px;height:24px;color:var(--secondary);flex-shrink:0;"></i>
+                    <div>
+                        <div class="animated-counter" data-target="{{ success_rate }}" data-suffix="%">0</div>
+                        <div class="stats-pill-label">Success Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── WHY PANCHAKARMA ── -->
+    <section class="section section-alt">
+        <div class="section-inner centered">
+            <div class="section-label">Why Panchakarma?</div>
+            <h2 class="section-title">Ancient Detox. Modern Clarity.</h2>
+            <p class="section-subtitle">Ayurveda's most powerful cleansing protocol — eliminating toxins at the cellular
+                level and restoring lasting balance.</p>
+
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon"><i data-lucide="zap" style="width:26px;height:26px;color:var(--primary);"></i></div>
+                    <h3>Deep Detoxification</h3>
+                    <p>Eliminates Ama (toxins) from tissues, restoring natural metabolic function.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon"><i data-lucide="scale" style="width:26px;height:26px;color:var(--secondary);"></i></div>
+                    <h3>Dosha Balancing</h3>
+                    <p>Corrects Vata, Pitta &amp; Kapha imbalances — the root of most chronic disease.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon"><i data-lucide="shield" style="width:26px;height:26px;color:#34d399;"></i></div>
+                    <h3>Immune Strengthening</h3>
+                    <p>Revitalises Ojas to build resilience, energy, and immune response.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon"><i data-lucide="brain" style="width:26px;height:26px;color:var(--accent);"></i></div>
+                    <h3>Mental Clarity</h3>
+                    <p>Calms the nervous system and brings deep psychological peace.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon"><i data-lucide="activity" style="width:26px;height:26px;color:#f87171;"></i></div>
+                    <h3>Pain Management</h3>
+                    <p>Effective for arthritis, back pain, and musculoskeletal conditions.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon"><i data-lucide="sparkles" style="width:26px;height:26px;color:#c084fc;"></i></div>
+                    <h3>Anti-Aging</h3>
+                    <p>Promotes cellular rejuvenation — better skin, hair, and vitality.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── CASHBACK ── -->
+    <section class="section" id="cashbackSection">
+        <div class="section-inner centered">
+            <div class="section-label">Exclusive Rewards</div>
+            <h2 class="section-title">Earn Cash Back on Consistency</h2>
+            <p class="section-subtitle">We reward commitment. The more sessions you complete, the more you save on your
+                next cycle.</p>
+
+            <div class="cashback-row">
+                <div class="cashback-tier cashback-bronze">
+                    <div class="cashback-pct">10%</div>
+                    <div class="cashback-tier-label">Cash Back</div>
+                    <p class="cashback-desc" style="font-size:1rem;color:var(--text-main);font-weight:500;">Get 10% cash back on 70% completion</p>
+                </div>
+
+                <div class="cashback-tier cashback-silver">
+                    <div class="cashback-pct" style="color:#94a3b8;">20%</div>
+                    <div class="cashback-tier-label">Cash Back</div>
+                    <p class="cashback-desc" style="font-size:1rem;color:var(--text-main);font-weight:500;">Get 20% cash back on 90% completion</p>
+                </div>
+
+                <div class="cashback-tier cashback-gold">
+                    <div class="cashback-best-badge">
+                        <i data-lucide="crown" style="width:11px;height:11px;"></i> Best Reward
+                    </div>
+                    <div class="cashback-pct" style="color:var(--accent);">30%</div>
+                    <div class="cashback-tier-label">Cash Back</div>
+                    <p class="cashback-desc" style="font-size:1rem;color:var(--text-main);font-weight:500;">Get cash back 30% after 100% completion of the treatment</p>
+                </div>
+            </div>
+
+            <p class="cashback-note">
+                <i data-lucide="info" style="width:13px;height:13px;display:inline;vertical-align:middle;margin-right:5px;color:var(--primary);"></i>
+                Cash back is applied as a discount on your next booking or follow-up consultation.
+            </p>
+        </div>
+    </section>
+
+    <!-- ── TREATMENT PLANS (DB) ── -->
+    <section class="section section-alt">
+        <div class="section-inner centered">
+            <div class="section-label">Treatment Catalogue</div>
+            <h2 class="section-title">Personalised Plans for Every Dosha</h2>
+            <p class="section-subtitle">Each plan is curated by certified Ayurvedic practitioners and tailored to your
+                body constitution after diagnosis.</p>
+            <div class="plans-grid">
+                {% for plan in plans %}
+                <div class="plan-card">
+                    <div class="plan-dosha-badge dosha-{{ plan.target_dosha }}">{{ plan.get_target_dosha_display }}
+                    </div>
+                    <h3 class="plan-name">{{ plan.name }}</h3>
+                    <div class="plan-duration">
+                        <span class="duration-number">{{ plan.duration_days }}</span>
+                        <span class="duration-label">days</span>
+                    </div>
+                    <p class="plan-description">{{ plan.description }}</p>
+                    <a href="{% url 'signup' %}" class="plan-cta">
+                        Start This Plan
+                        <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+                    </a>
+                </div>
+                {% empty %}
+                <p class="text-center" style="color:var(--text-muted);grid-column:1/-1;">No treatment plans configured yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ── JOURNEY ── -->
+    <section class="section section-alt">
+        <div class="section-inner centered">
+            <div class="section-label">Your Complete Journey</div>
+            <h2 class="section-title">Two Phases. One Transformation.</h2>
+            <p class="section-subtitle">A structured two-phase process — from first consultation to full recovery.</p>
+
+            <div class="timeline">
+                <div class="phase-header">
+                    <div class="phase-pill phase-1">
+                        <i data-lucide="stethoscope" class="icon-inline"></i>
+                        Phase 1 — Diagnosis &amp; Onboarding
+                    </div>
+                </div>
+                <div class="timeline-steps">
+                    <div class="timeline-step">
+                        <div class="step-node step-node-1">1</div>
+                        <div class="step-body">
+                            <h4>Register &amp; Create Profile</h4>
+                            <p>Sign up, fill in your health intake form — height, weight, age, and prior concerns.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="step-node step-node-1">2</div>
+                        <div class="step-body">
+                            <h4>Book a Diagnosis Slot</h4>
+                            <p>Pick a free 1-hour slot between 10AM–4PM. <b>Completely free of charge.</b></p>
+                        </div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="step-node step-node-1">3</div>
+                        <div class="step-body">
+                            <h4>In-Clinic Diagnosis</h4>
+                            <p>Your therapist assesses your Prakriti and documents Dosha imbalances.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="step-node step-node-1">4</div>
+                        <div class="step-body">
+                            <h4>Receive Diagnosis Report</h4>
+                            <p>View your Dosha assessment and recommended Panchakarma programme.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-divider">
+                    <div class="phase-divider-line"></div>
+                    <div class="phase-divider-label">
+                        <i data-lucide="git-branch" class="icon-inline"></i>
+                        Decision Gate — Proceed or Backout
+                    </div>
+                    <div class="phase-divider-line"></div>
+                </div>
+
+                <div class="phase-header">
+                    <div class="phase-pill phase-2">
+                        <i data-lucide="heart-pulse" class="icon-inline"></i>
+                        Phase 2 — Treatment &amp; Offboarding
+                    </div>
+                </div>
+                <div class="timeline-steps">
+                    <div class="timeline-step">
+                        <div class="step-node step-node-2">5</div>
+                        <div class="step-body">
+                            <h4>Select Treatment Plan</h4>
+                            <p>Review 7–15 day plans. The plan matching your diagnosis is highlighted.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="step-node step-node-2">6</div>
+                        <div class="step-body">
+                            <h4>Daily Treatment Sessions</h4>
+                            <p>Attend daily Panchakarma sessions. Your therapist marks attendance daily.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="step-node step-node-2">7</div>
+                        <div class="step-body">
+                            <h4>Completion &amp; Post-Care</h4>
+                            <p>Therapist ends the cycle. Access personalised Do's &amp; Don'ts for recovery.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="step-node step-node-2">8</div>
+                        <div class="step-body">
+                            <h4>Submit Feedback</h4>
+                            <p>Rate your therapist and share your overall treatment experience.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── CTA ── -->
+    <section class="cta-section">
+        <div class="section-inner centered text-center">
+            <h2 class="mb-3" style="font-size:2.4rem;color:var(--text-main);">Ready to Begin?</h2>
+            <p class="mb-4 mx-auto" style="color:var(--text-muted);font-size:1.05rem;max-width:460px;line-height:1.7;">
+                Join the platform and let an expert guide your personalised Panchakarma journey.
+            </p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">Open My Dashboard</a>
+            {% else %}
+            <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">Book Your Free Diagnosis</a>
+            <p class="mt-3 mb-0" style="color:var(--text-muted);font-size:0.82rem;">No credit card required</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <footer class="text-center py-4 border-top" style="color:var(--text-muted);border-color:var(--border) !important;font-size:0.82rem;">
+        &copy; 2026 PanchkarmaSetu — Ancient healing, modern delivery.
+    </footer>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    lucide.createIcons();
+
+    // Animated counters on scroll
+    const counters = document.querySelectorAll('.animated-counter');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.dataset.animated) {
+                entry.target.dataset.animated = '1';
+                const target = parseInt(entry.target.dataset.target, 10);
+                const suffix = entry.target.dataset.suffix || '';
+                const duration = 1600;
+                const start = performance.now();
+                const tick = (now) => {
+                    const p = Math.min((now - start) / duration, 1);
+                    const eased = 1 - Math.pow(1 - p, 3);
+                    entry.target.textContent = Math.floor(eased * target) + suffix;
+                    if (p < 1) requestAnimationFrame(tick);
+                };
+                requestAnimationFrame(tick);
+            }
+        });
+    }, { threshold: 0.4 });
+    counters.forEach(c => observer.observe(c));
+</script>
+
+</html>

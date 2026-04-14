@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width:600px;" class="mx-auto">
+    <h2 class="mb-5">Book Initial Diagnosis</h2>
+    <form method="post" id="bookingForm" class="glass-card">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_date">Preferred Date</label>
+            {{ form.date }}
+        </div>
+
+        <div class="form-group" style="display:none;" id="slotsContainer">
+            <h3 class="mb-2" style="font-size:1.1rem;color:var(--primary);">Select a Time Slot</h3>
+            <p class="mb-3" style="color:var(--text-muted);font-size:0.85rem;">Choose an available slot for your initial diagnosis.</p>
+
+            <div class="d-flex gap-3 align-items-center mb-3 p-3 rounded-3 border" style="font-size:0.8rem;background:rgba(255,255,255,0.02);border-color:var(--border) !important;">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-1" style="width:16px;height:16px;background:rgba(16,185,129,0.1);border:1px solid var(--primary);"></div>
+                    <span style="color:var(--text-muted);">Available</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-1" style="width:16px;height:16px;background:var(--primary);box-shadow:0 0 8px rgba(16,185,129,0.5);"></div>
+                    <span style="color:var(--text-main);">Selected</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-1" style="width:16px;height:16px;background:var(--booked-slot);border:1px solid var(--border);"></div>
+                    <span style="color:var(--text-muted);">Booked (Unavailable)</span>
+                </div>
+            </div>
+
+            <div class="slots-grid mb-4" id="slotsGrid"></div>
+            {{ form.time_slot }}
+        </div>
+
+        <div class="dashboard-grid" style="gap:1rem;">
+            <div class="form-group">
+                <label for="id_height">Height (cm)</label>
+                {{ form.height }}
+            </div>
+            <div class="form-group">
+                <label for="id_weight">Weight (kg)</label>
+                {{ form.weight }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="id_age">Age</label>
+            {{ form.age }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_prior_health_issues">Prior Health Issues</label>
+            {{ form.prior_health_issues }}
+        </div>
+
+        <button type="button" id="openConsentBtn" class="btn btn-primary w-100 mt-3">Continue to Booking</button>
+    </form>
+
+    <!-- Consent Modal Overlay -->
+    <div id="consentModal" class="position-fixed top-0 start-0 w-100 h-100 justify-content-center align-items-center p-3" style="display:none;background:rgba(0,0,0,0.8);z-index:9999;">
+        <div class="glass-card" style="max-width:500px;width:100%;background:var(--bg-card);border:2px solid var(--accent);">
+            <h3 class="mb-3" style="color:var(--accent);">Treatment Consent &amp; Agreement</h3>
+            <p class="mb-4" style="font-size:0.9rem;color:var(--text-muted);line-height:1.6;">
+                By proceeding with this booking, you consent to undergo an initial Ayurvedic diagnosis.
+                You agree to provide accurate health information and understand that the resulting treatment plan is highly individualized.
+                <br><br>
+                Please note that appointment slots are reserved specifically for you.
+            </p>
+            <div class="d-flex gap-3">
+                <button type="button" id="consentNoBtn" class="btn btn-outline flex-fill">No, Go Back</button>
+                <button type="button" id="consentYesBtn" class="btn btn-primary flex-fill">Yes, I Accept</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('id_date');
+        const timeInput = document.getElementById('id_time_slot');
+        const slotsContainer = document.getElementById('slotsContainer');
+        const slotsGrid = document.getElementById('slotsGrid');
+
+        // Hide actual time input
+        timeInput.style.display = 'none';
+
+        // ---- Enforce min date = today (dynamic, calculated fresh) ----
+        function getTodayStr() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+        dateInput.setAttribute('min', getTodayStr());
+        // Re-enforce on focus in case the page has been open overnight
+        dateInput.addEventListener('focus', function() {
+            this.setAttribute('min', getTodayStr());
+        });
+
+        // ---- Validate selected date on change ----
+        dateInput.addEventListener('change', function() {
+            const today = getTodayStr();
+            if (this.value < today) {
+                alert('Past dates are not allowed. Please select today or a future date.');
+                this.value = today;
+                slotsContainer.style.display = 'none';
+                timeInput.value = '';
+                return;
+            }
+
+            if (this.value) {
+                fetch(`/patient/slots/?date=${this.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        slotsContainer.style.display = 'block';
+                        slotsGrid.innerHTML = '';
+
+                        const isToday = (this.value === getTodayStr());
+                        const nowHour = new Date().getHours();
+                        const nowMin  = new Date().getMinutes();
+
+                        data.slots.forEach(slot => {
+                            const div = document.createElement('div');
+                            const [slotHour, slotMin] = slot.time.split(':').map(Number);
+
+                            // For today: disable slots whose hour has already passed (or is the current hour if minute > 0)
+                            const isPast = isToday && (
+                                slotHour < nowHour ||
+                                (slotHour === nowHour && nowMin > 0)
+                            );
+
+                            const isDisabled = !slot.available || isPast;
+                            div.className = `slot ${isDisabled ? 'disabled' : ''}`;
+                            div.textContent = slot.display;
+                            div.dataset.time = slot.time;
+
+                            if (isPast && slot.available) {
+                                div.dataset.past = 'true';
+                                div.title = 'This time has already passed today';
+                            }
+
+                            if (!isDisabled) {
+                                div.addEventListener('click', function() {
+                                    document.querySelectorAll('.slot').forEach(el => el.classList.remove('selected'));
+                                    this.classList.add('selected');
+                                    timeInput.value = this.dataset.time;
+                                });
+                            }
+                            slotsGrid.appendChild(div);
+                        });
+                    });
+            }
+        });
+
+        // Consent Modal Logic
+        const consentModal = document.getElementById('consentModal');
+        const openConsentBtn = document.getElementById('openConsentBtn');
+        const consentNoBtn = document.getElementById('consentNoBtn');
+        const consentYesBtn = document.getElementById('consentYesBtn');
+        const bookingForm = document.getElementById('bookingForm');
+
+        openConsentBtn.addEventListener('click', function() {
+            if (!timeInput.value) {
+                alert("Please select an available time slot before continuing.");
+                return;
+            }
+            if (bookingForm.checkValidity()) {
+                consentModal.style.display = 'flex';
+            } else {
+                bookingForm.reportValidity();
+            }
+        });
+
+        consentNoBtn.addEventListener('click', function() {
+            consentModal.style.display = 'none';
+        });
+
+        consentYesBtn.addEventListener('click', function() {
+            consentModal.style.display = 'none';
+            bookingForm.submit();
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width:600px;" class="mx-auto text-center">
+    <h2 class="mb-5">Diagnosis Results</h2>
+
+    <div class="glass-card mb-4">
+        <h3 style="color:var(--primary);">Body Type (Dosha): {{ report.get_dosha_display }}</h3>
+        <p class="mt-3 text-start" style="color:var(--text-main);">
+            <strong>Findings:</strong><br>
+            {{ report.diagnosis_result }}
+        </p>
+    </div>
+
+    <div class="glass-card position-relative overflow-hidden mb-4" style="border:2px solid var(--accent);">
+        <div class="position-absolute top-0 end-0 px-3 py-2 fw-bold" style="background:var(--accent);color:#fff;font-size:0.8rem;border-bottom-left-radius:8px;">RECOMMENDED</div>
+        <h3 class="mt-3">{{ report.recommended_treatment.name }}</h3>
+        <p class="mb-3" style="color:var(--text-muted);">Duration: {{ report.recommended_treatment.duration_days }} Days</p>
+        <p class="text-start">{{ report.recommended_treatment.description }}</p>
+
+        {% if report.recommended_treatment.detailed_info %}
+        <div class="mt-4 text-start rounded-3 px-3 py-3" style="background:rgba(0,0,0,0.2);">
+            <h4 class="mb-3" style="color:var(--primary);">Treatment Phases &amp; Breakdown:</h4>
+            <div style="font-size:0.9rem;color:var(--text-muted);line-height:1.6;">
+                {{ report.recommended_treatment.detailed_info|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <form method="post" class="d-flex gap-3 justify-content-center">
+        {% csrf_token %}
+        <button type="submit" name="decision" value="backout" class="btn btn-outline">Backout</button>
+        <button type="submit" name="decision" value="proceed" class="btn btn-primary">Proceed with Treatment</button>
+    </form>
+</div>
+{% endblock %}

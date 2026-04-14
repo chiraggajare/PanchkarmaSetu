@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width:500px;" class="mx-auto mt-4 glass-card">
+    <h2 class="text-center mb-4">Create Account</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary w-100 mt-3">Register</button>
+    </form>
+    <p class="text-center mt-4 mb-0" style="color:var(--text-muted);font-size:0.9rem;">
+        Already have an account? <a href="{% url 'login' %}" style="color:var(--primary);">Login</a>
+    </p>
+</div>
+{% endblock %}
