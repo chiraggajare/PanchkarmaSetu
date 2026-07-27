@@ -8,20 +8,20 @@ from datetime import datetime, timedelta, time, date
 from django.db.models import Avg
 from collections import defaultdict
 from .models import User, Appointment, DiagnosisReport, TreatmentCycle, Attendance, TreatmentPlan, Notification
-from .forms import CustomUserCreationForm, IntakeForm, DiagnosisReportForm, FeedbackForm, EmailChangeForm
+from .forms import CustomUserCreationForm, PatientSignUpForm, IntakeForm, DiagnosisReportForm, FeedbackForm, EmailChangeForm
 from .pdf_utils import generate_treatment_pdf
 
 
 
 def signup(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+        form = PatientSignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect('dashboard')
     else:
-        form = CustomUserCreationForm()
+        form = PatientSignUpForm()
     return render(request, 'core/signup.html', {'form': form})
 
 

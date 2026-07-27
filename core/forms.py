@@ -7,6 +7,11 @@ class CustomUserCreationForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'role',)
 
+class PatientSignUpForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ('username', 'email',)
+
 class IntakeForm(forms.ModelForm):
     class Meta:
         model = Appointment
