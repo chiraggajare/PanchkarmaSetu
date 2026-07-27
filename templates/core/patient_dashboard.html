@@ -91,6 +91,9 @@
             {% endif %}
             <div class="d-flex gap-3 flex-wrap mt-4">
                 <a href="{% url 'submit_feedback' completed_cycle_awaiting_feedback.id %}" class="btn btn-primary">Submit Feedback</a>
+                <button type="button" class="btn btn-primary d-flex align-items-center gap-2 ai-report-btn" data-cycle-id="{{ completed_cycle_awaiting_feedback.id }}" style="background: linear-gradient(135deg, #10B981, #3B82F6); border: none;">
+                    <span class="ai-btn-text">✨ AI Wellness Analysis</span>
+                </button>
                 <a href="{% url 'download_treatment_pdf' completed_cycle_awaiting_feedback.id %}" class="btn btn-outline d-flex align-items-center gap-2">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
@@ -191,6 +194,9 @@
                 <span class="badge rounded-pill fw-bold" style="padding:0.4rem 1rem;font-size:0.8rem;background:{{ item.success_color }}22;border:1px solid {{ item.success_color }};color:{{ item.success_color }};">
                     {{ item.success_label }}
                 </span>
+                <button type="button" class="btn btn-outline d-flex align-items-center gap-1 ai-report-btn" data-cycle-id="{{ item.cycle.id }}" style="padding:0.4rem 1rem;font-size:0.85rem; border-color: #10B981; color: #10B981;">
+                    <span>✨ AI Wellness Analysis</span>
+                </button>
                 <a href="{% url 'download_treatment_pdf' item.cycle.id %}" class="btn btn-outline d-flex align-items-center gap-1" style="padding:0.4rem 1rem;font-size:0.85rem;">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
@@ -253,5 +259,170 @@
     {% endfor %}
 </div>
 {% endif %}
+
+<!-- ==================== AI Report Preview Modal ==================== -->
+<div id="aiReportModal" class="custom-modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.6); backdrop-filter:blur(5px); transition: opacity 0.3s ease;">
+    <div class="custom-modal-content" style="background:var(--bg-card); margin:8% auto; padding:2rem; border:1px solid var(--border); width:90%; max-width:700px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.3); position:relative;">
+        <span class="close-modal-btn" style="position:absolute; right:1.5rem; top:1.2rem; font-size:1.5rem; font-weight:bold; cursor:pointer; color:var(--text-muted);">&times;</span>
+        
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div style="background:linear-gradient(135deg, #10B981, #3B82F6); padding:0.5rem; border-radius:10px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+            </div>
+            <div>
+                <h3 class="mb-0" style="font-size:1.4rem;">AI Wellness Report</h3>
+                <p class="mb-0 text-muted" style="font-size:0.85rem;" id="aiReportMeta"></p>
+            </div>
+        </div>
+
+        <div id="aiReportLoader" class="text-center py-5" style="display:none;">
+            <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Generating...</span>
+            </div>
+            <p class="mt-3 text-muted">Gemini is analyzing your daily vitals, therapist notes, and feedback to generate your report...</p>
+        </div>
+
+        <div id="aiReportBody" style="max-height: 400px; overflow-y: auto; font-size: 0.9rem; line-height: 1.6; color: var(--text-muted); padding-right: 8px;">
+            <!-- Report content inserted here -->
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top" style="border-color:var(--border) !important;">
+            <button id="aiRegenerateBtn" class="btn btn-outline d-flex align-items-center gap-2" style="font-size:0.85rem;">
+                🔄 Regenerate Report
+            </button>
+            <div class="d-flex gap-2">
+                <button id="aiCloseBtn" class="btn btn-outline" style="font-size:0.85rem;">Close</button>
+                <a id="aiDownloadPdfBtn" href="#" class="btn btn-primary d-flex align-items-center gap-2" style="font-size:0.85rem;">
+                    Download Full PDF
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('aiReportModal');
+    const closeSpan = document.querySelector('.close-modal-btn');
+    const closeBtn = document.getElementById('aiCloseBtn');
+    const regenerateBtn = document.getElementById('aiRegenerateBtn');
+    const downloadPdfBtn = document.getElementById('aiDownloadPdfBtn');
+    const reportBody = document.getElementById('aiReportBody');
+    const reportMeta = document.getElementById('aiReportMeta');
+    const loader = document.getElementById('aiReportLoader');
+    
+    let currentCycleId = null;
+
+    function openModal() {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    closeSpan.onclick = closeModal;
+    closeBtn.onclick = closeModal;
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    function formatMarkdown(text) {
+        // Convert simple markdown headings and bold text to clean HTML
+        let formatted = text;
+        
+        // Escape HTML to prevent injection
+        const tempDiv = document.createElement('div');
+        tempDiv.textContent = formatted;
+        formatted = tempDiv.innerHTML;
+        
+        // Convert **bold** to <strong>bold</strong>
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        // Convert newlines to breaks or paragraphs
+        formatted = formatted.split('\n').map(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return '<br>';
+            if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
+                return `<li class="ml-3 mb-1">${trimmed.substring(1).trim()}</li>`;
+            }
+            // If it starts with a section header format
+            if (trimmed.startsWith('<strong>')) {
+                return `<p class="mt-3 mb-2">${trimmed}</p>`;
+            }
+            return `<p class="mb-2">${trimmed}</p>`;
+        }).join('');
+        
+        return formatted;
+    }
+
+    function fetchOrCreateReport(cycleId, regenerate = false) {
+        currentCycleId = cycleId;
+        reportBody.style.display = 'none';
+        loader.style.display = 'block';
+        reportMeta.textContent = regenerate ? 'Regenerating Analysis...' : 'Analyzing wellness records...';
+        openModal();
+
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        if (regenerate) {
+            formData.append('regenerate', 'true');
+        }
+
+        fetch(`/patient/cycle/${cycleId}/generate-report/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            loader.style.display = 'none';
+            if (data.status === 'success') {
+                reportBody.innerHTML = formatMarkdown(data.report);
+                reportBody.style.display = 'block';
+                
+                const dateStr = data.generated_at ? `Generated at ${data.generated_at}` : 'Analysis Ready';
+                reportMeta.textContent = dateStr;
+                
+                // Update download PDF URL
+                downloadPdfBtn.href = `/cycle/${cycleId}/pdf/`;
+            } else {
+                reportBody.innerHTML = `<p class="text-danger">Failed to generate report: ${data.error || 'Unknown error'}</p>`;
+                reportBody.style.display = 'block';
+            }
+        })
+        .catch(err => {
+            loader.style.display = 'none';
+            reportBody.innerHTML = `<p class="text-danger">Error: ${err.message}</p>`;
+            reportBody.style.display = 'block';
+        });
+    }
+
+    // Attach listeners to all AI buttons
+    document.querySelectorAll('.ai-report-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const cycleId = this.getAttribute('data-cycle-id');
+            fetchOrCreateReport(cycleId, false);
+        });
+    });
+
+    regenerateBtn.addEventListener('click', function() {
+        if (currentCycleId && confirm('Do you want to regenerate the AI Wellness Analysis? This will overwrite the current cached version.')) {
+            fetchOrCreateReport(currentCycleId, true);
+        }
+    });
+});
+</script>
 
 {% endblock %}

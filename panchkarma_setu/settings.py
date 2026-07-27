@@ -11,9 +11,15 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env file at Django startup so all env vars are available everywhere
+load_dotenv(BASE_DIR / '.env')
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -131,6 +137,11 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your-email@gmail.com' # CHANGE THIS
 EMAIL_HOST_PASSWORD = 'your-app-password' # CHANGE THIS
 DEFAULT_FROM_EMAIL = 'Panchkarma Setu <noreply@panchkarmasetu.com>'
+
+GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY', '')
+GROQ_API_KEY   = os.environ.get('GROQ_API_KEY', '')
+
+
 
 
 

@@ -498,9 +498,21 @@ def add_user(request):
             form.save()
             messages.success(request, f"User '{request.POST.get('username')}' created successfully.")
         else:
+            # Map technical form field keys to user-friendly labels
+            field_label_map = {
+                'password1': 'Password',
+                'password2': 'Password Confirmation',
+                'username': 'Username',
+                'email': 'Email',
+                '__all__': ''
+            }
             for field, errors in form.errors.items():
+                label = field_label_map.get(field, field.replace('_', ' ').capitalize())
                 for err in errors:
-                    messages.error(request, f"{field}: {err}")
+                    if label:
+                        messages.error(request, f"{label}: {err}")
+                    else:
+                        messages.error(request, f"{err}")
     return redirect('dashboard')
 
 @login_required
@@ -606,3 +618,53 @@ def delete_notification(request, notification_id):
     notification = get_object_or_404(Notification, id=notification_id, user=request.user)
     notification.delete()
     return redirect('dashboard')
+
+@login_required
+def generate_ai_report(request, cycle_id):
+    """
+    On-demand generation and caching of LLM report using Gemini.
+    """
+    cycle = get_object_or_404(TreatmentCycle, id=cycle_id)
+    # Ensure only the patient or therapist can view/trigger report generation
+    if request.user != cycle.patient and request.user.role != 'therapist':
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    if request.method == 'POST':
+        force_regen = request.POST.get('regenerate') == 'true'
+        
+        # Check if already generated and cached
+        if not cycle.ai_report_text or force_regen:
+            from core.ai_report import generate_patient_narrative
+            from django.utils import timezone
+            
+            # Generate new report narrative via Gemini SDK
+            report_text = generate_patient_narrative(cycle)
+            
+            cycle.ai_report_text = report_text
+            cycle.ai_report_generated_at = timezone.now()
+            cycle.save()
+            
+            # Create a user notification
+            from core.models import Notification
+            Notification.objects.create(
+                user=cycle.patient,
+                title="AI Wellness Report Generated",
+                message=f"Your personalized AI Wellness Analysis is now ready for download."
+            )
+
+        return JsonResponse({
+            'status': 'success',
+            'report': cycle.ai_report_text,
+            'generated_at': cycle.ai_report_generated_at.strftime('%Y-%m-%d %H:%M:%S') if cycle.ai_report_generated_at else None
+        })
+
+    # GET request retrieves cached report if present
+    if cycle.ai_report_text:
+        return JsonResponse({
+            'status': 'success',
+            'report': cycle.ai_report_text,
+            'generated_at': cycle.ai_report_generated_at.strftime('%Y-%m-%d %H:%M:%S') if cycle.ai_report_generated_at else None
+        })
+        
+    return JsonResponse({'status': 'not_generated'})
+

@@ -73,6 +73,10 @@ class TreatmentCycle(models.Model):
     overall_rating = models.IntegerField(null=True, blank=True, help_text="1 to 5 stars")
     is_cancelled_midway = models.BooleanField(default=False)
     
+    # AI Report
+    ai_report_text = models.TextField(blank=True, null=True)
+    ai_report_generated_at = models.DateTimeField(blank=True, null=True)
+    
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     title = models.CharField(max_length=200)

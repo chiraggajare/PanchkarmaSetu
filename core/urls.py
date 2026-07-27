@@ -17,6 +17,7 @@ urlpatterns = [
     path('patient/decision/<int:report_id>/', views.treatment_decision, name='treatment_decision'),
     path('patient/feedback/<int:cycle_id>/', views.submit_feedback, name='submit_feedback'),
     path('patient/cycle/<int:cycle_id>/cancel/', views.cancel_active_cycle, name='cancel_active_cycle'),
+    path('patient/cycle/<int:cycle_id>/generate-report/', views.generate_ai_report, name='generate_ai_report'),
     
     # Therapist Flows
     path('therapist/appointment/<int:appointment_id>/status/', views.update_appointment_status, name='update_appointment_status'),
