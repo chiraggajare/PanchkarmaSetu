@@ -158,10 +158,16 @@ def render_patient_dashboard(request):
     ).prefetch_related('attendances').order_by('-start_date')
 
     previous_cycles = []
+    total_sessions_attended = 0
+    has_ai_report = False
+
     for cyc in prev_cycles_qs:
         attended = cyc.attendances.filter(is_attended=True).count()
         total = cyc.treatment_plan.duration_days
         pct = (attended / total * 100) if total > 0 else 0
+        total_sessions_attended += attended
+        if cyc.ai_report_text:
+            has_ai_report = True
         if pct >= 70:
             success_label = 'Full Success'
             success_color = '#10b981'
@@ -186,7 +192,17 @@ def render_patient_dashboard(request):
             'diagnosis': diag,
             'attendances': list(cyc.attendances.all().order_by('date')),
         })
-        
+
+    # Latest diagnosed dosha for personalised tips
+    latest_dosha = None
+    latest_diag = DiagnosisReport.objects.filter(
+        appointment__patient=user
+    ).order_by('-appointment__date').first()
+    if latest_diag and latest_diag.recommended_treatment:
+        latest_dosha = latest_diag.recommended_treatment.target_dosha
+    elif active_cycle and active_cycle.treatment_plan:
+        latest_dosha = active_cycle.treatment_plan.target_dosha
+
     context = {
         'active_cycle': active_cycle,
         'upcoming_appointments': upcoming_appointments,
@@ -195,6 +211,11 @@ def render_patient_dashboard(request):
         'completed_cycle_awaiting_feedback': completed_cycle_awaiting_feedback,
         'therapist_info': therapist_info,
         'previous_cycles': previous_cycles,
+        # Wellness stats for dashboard header
+        'total_sessions_attended': total_sessions_attended,
+        'total_cycles_completed': len(previous_cycles),
+        'latest_dosha': latest_dosha,
+        'has_ai_report': has_ai_report,
     }
     return render(request, 'core/patient_dashboard.html', context)
 

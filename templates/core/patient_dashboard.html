@@ -1,9 +1,175 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<style>
+/* ── Dashboard micro-animations ── */
+@keyframes cardEnter {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.dash-card-anim { animation: cardEnter 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+.dash-card-anim:nth-child(1) { animation-delay: 0ms; }
+.dash-card-anim:nth-child(2) { animation-delay: 80ms; }
+.dash-card-anim:nth-child(3) { animation-delay: 160ms; }
+
+@keyframes statCount {
+    from { opacity: 0; transform: scale(0.8); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.stat-num { animation: statCount 0.6s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
+
+/* Progress bar fill animation */
+@keyframes fillBar {
+    from { width: 0%; }
+}
+.progress-fill { animation: fillBar 1s cubic-bezier(0.16,1,0.3,1) 0.5s both; }
+
+/* Quick Stats Banner */
+.stats-banner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+}
+.stat-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0.5rem;
+    border-right: 1px solid var(--border);
+}
+.stat-tile:last-child { border-right: none; }
+.stat-tile-num {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+}
+.stat-tile-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 0.3rem;
+}
+
+/* Dosha tips card */
+.dosha-tips-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+.dosha-tip-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+.dosha-tip-item:last-child { border-bottom: none; }
+.tip-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+    margin-top: 6px;
+}
+
+/* Getting Started card for new patients */
+.onboard-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+}
+.onboard-step:last-child { border-bottom: none; }
+.onboard-num {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: rgba(16,185,129,0.12);
+    border: 2px solid rgba(16,185,129,0.35);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+/* AI report ready banner */
+.ai-ready-banner {
+    background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.08));
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 14px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+.ai-ready-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+}
+@media(max-width:600px) {
+    .stats-banner { grid-template-columns: repeat(2,1fr); }
+    .stat-tile { border-right: none; border-bottom: 1px solid var(--border); }
+    .stat-tile:last-child { border-bottom: none; }
+}
+</style>
+
+<!-- ══ QUICK STATS BANNER ══ -->
+{% if total_cycles_completed > 0 or total_sessions_attended > 0 %}
+<div class="stats-banner dash-card-anim">
+    <div class="stat-tile">
+        <div class="stat-tile-num stat-num">{{ total_sessions_attended }}</div>
+        <div class="stat-tile-label">Sessions Attended</div>
+    </div>
+    <div class="stat-tile">
+        <div class="stat-tile-num stat-num">{{ total_cycles_completed }}</div>
+        <div class="stat-tile-label">Treatments Done</div>
+    </div>
+    <div class="stat-tile">
+        <div class="stat-tile-num stat-num">{% if has_ai_report %}✓{% else %}—{% endif %}</div>
+        <div class="stat-tile-label">AI Report Ready</div>
+    </div>
+    {% if latest_dosha %}
+    <div class="stat-tile">
+        <div class="stat-tile-num" style="font-size:1.1rem;-webkit-text-fill-color:var(--accent);background:none;color:var(--accent);">{{ latest_dosha|title }}</div>
+        <div class="stat-tile-label">Your Dosha</div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ══ AI REPORT READY BANNER ══ -->
+{% if has_ai_report %}
+<div class="ai-ready-banner dash-card-anim">
+    <div class="ai-ready-icon">✨</div>
+    <div style="flex:1;">
+        <div style="font-weight:600;font-size:0.95rem;">Your AI Wellness Report is ready</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:2px;">Your personalised Ayurvedic analysis has been generated. View or download it from Treatment History below.</div>
+    </div>
+    <a href="#treatmentHistory" class="btn btn-outline" style="font-size:0.82rem;padding:0.4rem 1rem;white-space:nowrap;">View Report ↓</a>
+</div>
+{% endif %}
+
 <!-- Therapist Rating Card (shown if patient has an assigned therapist) -->
 {% if therapist_info %}
-<div class="d-flex align-items-center gap-4 flex-wrap mb-4 px-4 py-3 rounded-3 border" style="background:var(--bg-card);border-color:var(--border) !important;">
+<div class="d-flex align-items-center gap-4 flex-wrap mb-4 px-4 py-3 rounded-3 border dash-card-anim" style="background:var(--bg-card);border-color:var(--border) !important;">
     <div>
         <p class="mb-1 text-uppercase" style="font-size:0.8rem;color:var(--text-muted);letter-spacing:1px;">
             Your Assigned Therapist</p>
@@ -34,7 +200,7 @@
         <h2 class="mb-4">Your Health Journey</h2>
 
         {% if pending_diagnosis %}
-        <div class="glass-card mb-4" style="border-left:4px solid var(--accent);">
+        <div class="glass-card mb-4 dash-card-anim" style="border-left:4px solid var(--accent);">
             <h3>Action Required: Diagnosis Ready</h3>
             <p>Your therapist has completed your diagnosis. You've been assessed as having a <strong>{{ pending_diagnosis.get_dosha_display }}</strong> dosha.</p>
             <p class="mt-2" style="color:var(--text-muted);">{{ pending_diagnosis.diagnosis_result|truncatewords:20 }}</p>
@@ -45,7 +211,7 @@
         {% endif %}
 
         {% if upcoming_appointments %}
-        <div class="glass-card mb-4">
+        <div class="glass-card mb-4 dash-card-anim">
             <h3>Upcoming Appointments</h3>
             {% for appt in upcoming_appointments %}
             <div class="py-3 border-bottom" style="border-color:var(--border) !important;">
@@ -67,7 +233,7 @@
         </div>
         {% else %}
         {% if not active_cycle and not pending_diagnosis and not completed_cycle_awaiting_feedback %}
-        <div class="glass-card text-center mb-4">
+        <div class="glass-card text-center mb-4 dash-card-anim">
             <h3 class="mb-3" style="color:var(--text-muted);">Start Your Journey</h3>
             <a href="{% url 'book_appointment' %}" class="btn btn-primary">Book Initial Diagnosis</a>
         </div>
@@ -75,7 +241,7 @@
         {% endif %}
 
         {% if completed_cycle_awaiting_feedback %}
-        <div class="glass-card mb-4" style="border-left:4px solid var(--accent);">
+        <div class="glass-card mb-4 dash-card-anim" style="border-left:4px solid var(--accent);">
             {% if completed_cycle_awaiting_feedback.is_cancelled_midway %}
             <h3 style="color:#ef4444;">Treatment Concluded Incompletely</h3>
             <p class="mt-2" style="color:var(--text-muted);">
@@ -83,7 +249,7 @@
                 As per our policy, there are no refunds for terminated treatments. Please provide your exit feedback below.
             </p>
             {% else %}
-            <h3>Your Treatment is Complete!</h3>
+            <h3>Your Treatment is Complete! 🎉</h3>
             <p class="mt-2" style="color:var(--text-muted);">
                 Congratulations on completing your <strong style="color:var(--primary);">{{ completed_cycle_awaiting_feedback.treatment_plan.name }}</strong> cycle.
                 Please share your experience with us.
@@ -105,10 +271,10 @@
         {% endif %}
     </div>
 
-    <!-- Right Column: Active Treatment & Heatmap -->
+    <!-- Right Column: Active Treatment / Dosha Tips / Getting Started -->
     <div>
         {% if active_cycle %}
-        <div class="glass-card position-relative overflow-hidden">
+        <div class="glass-card position-relative overflow-hidden dash-card-anim">
             <div class="position-absolute top-0 end-0 px-3 py-2 fw-bold" style="background:var(--primary);font-size:0.8rem;border-bottom-left-radius:8px;">
                 ACTIVE</div>
 
@@ -149,29 +315,122 @@
             </form>
         </div>
 
-        <div class="glass-card mt-4">
-            <h3>Post-Care Instructions</h3>
-            <ul class="mt-3 ps-4" style="color:var(--text-muted);">
-                <li class="mb-2">Drink at least 3 liters of warm water daily.</li>
-                <li class="mb-2">Avoid heavy, oily, or processed foods.</li>
-                <li class="mb-2">Ensure 8 hours of uninterrupted sleep.</li>
-            </ul>
+        <!-- Dosha-Aware Post-Care Instructions -->
+        <div class="dosha-tips-card mt-4 dash-card-anim">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span style="font-size:1.3rem;">🌿</span>
+                <div>
+                    <h3 class="mb-0" style="font-size:1rem;">Post-Care Instructions</h3>
+                    {% if active_cycle.treatment_plan.target_dosha %}
+                    <span style="font-size:0.75rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;">For {{ active_cycle.treatment_plan.get_target_dosha_display }} Dosha</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% with d=active_cycle.treatment_plan.target_dosha %}
+            {% if d == 'vata' %}
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Drink at least 3 liters of warm (not cold) water and herbal teas daily.</div>
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Avoid raw, cold, dry, and processed foods. Favour warm, oily, cooked meals.</div>
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Keep a strict routine for sleep (10pm), waking (6am), and meals.</div>
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Avoid vigorous workouts — gentle yoga, walks, and self-massage with sesame oil are ideal.</div>
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Ashwagandha 500mg twice daily and Triphala at bedtime are recommended.</div>
+            {% elif d == 'pitta' %}
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#f59e0b;"></div>Drink 3+ liters of cool water, coconut water, or mint-coriander herbal tea daily.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#f59e0b;"></div>Avoid spicy, salty, fried and sour foods. Prefer cooling, sweet, and bitter foods.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#f59e0b;"></div>Avoid direct sunlight, hot environments, and late nights.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#f59e0b;"></div>Gentle swimming, evening walks, and moon-gazing meditation are ideal activities.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#f59e0b;"></div>Shatavari 500mg with milk and Amalaki powder each morning are recommended.</div>
+            {% elif d == 'kapha' %}
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#3b82f6;"></div>Drink warm ginger water throughout the day — avoid cold beverages entirely.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#3b82f6;"></div>Avoid dairy, sweets, heavy fats, and excessive salt. Prefer light, warm, spiced meals.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#3b82f6;"></div>No daytime sleeping. Maintain 7-8 hours at night with a 6am wake-up.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#3b82f6;"></div>Engage in brisk walking, cycling, or vigorous yoga for at least 30 minutes daily.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#3b82f6;"></div>Trikatu Churna before meals and Guggulu 500mg twice daily are recommended.</div>
+            {% else %}
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Drink at least 3 liters of warm water daily for the next 5 days.</div>
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Avoid heavy, oily, or processed foods.</div>
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Ensure 8 hours of uninterrupted sleep every night.</div>
+            {% endif %}
+            {% endwith %}
         </div>
+
         {% elif not pending_diagnosis and not upcoming_appointments and not completed_cycle_awaiting_feedback and not previous_cycles %}
-        <div class="glass-card d-flex flex-column align-items-center justify-content-center text-center" style="min-height:300px;">
-            <svg class="mb-3" style="width:64px;height:64px;color:var(--primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-            </svg>
-            <h3 style="color:var(--text-muted);">No active treatment.</h3>
-            <p class="mt-2" style="font-size:0.9rem;color:#64748b;">Your customized Panchakarma journey will appear here once diagnosed.</p>
+        <!-- Rich onboarding state for brand-new patients -->
+        <div class="glass-card dash-card-anim">
+            <div class="text-center mb-4">
+                <div style="font-size:3rem;margin-bottom:0.5rem;">🌱</div>
+                <h3 style="font-size:1.1rem;">Welcome to PanchkarmaSetu</h3>
+                <p style="font-size:0.87rem;color:var(--text-muted);">Here's how to begin your wellness journey in 3 simple steps.</p>
+            </div>
+            <div>
+                <div class="onboard-step">
+                    <div class="onboard-num">1</div>
+                    <div>
+                        <div style="font-weight:600;font-size:0.9rem;">Book a Free Diagnosis</div>
+                        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:2px;">Schedule a 1-hour slot with a certified Ayurvedic therapist. Completely free.</div>
+                    </div>
+                </div>
+                <div class="onboard-step">
+                    <div class="onboard-num">2</div>
+                    <div>
+                        <div style="font-weight:600;font-size:0.9rem;">Get Your Dosha Assessed</div>
+                        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:2px;">Your therapist will assess your Prakriti (body constitution) and recommend a personalised treatment plan.</div>
+                    </div>
+                </div>
+                <div class="onboard-step">
+                    <div class="onboard-num">3</div>
+                    <div>
+                        <div style="font-weight:600;font-size:0.9rem;">Begin Your Panchakarma Cycle</div>
+                        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:2px;">Attend daily sessions, track attendance, and receive an AI-generated wellness report on completion.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="{% url 'book_appointment' %}" class="btn btn-primary" style="width:100%;">Book My Free Diagnosis →</a>
+            </div>
         </div>
+
+        {% elif not active_cycle and latest_dosha %}
+        <!-- Dosha tips for returning patients with no active cycle -->
+        <div class="dosha-tips-card dash-card-anim">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span style="font-size:1.3rem;">🌿</span>
+                <div>
+                    <h3 class="mb-0" style="font-size:1rem;">Daily Wellness Tips</h3>
+                    <span style="font-size:0.75rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;">For Your {{ latest_dosha|title }} Dosha</span>
+                </div>
+            </div>
+            {% if latest_dosha == 'vata' %}
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Start your day with warm sesame oil self-massage (Abhyanga) for 10 minutes.</div>
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Eat warm, cooked meals with healthy fats. Avoid raw salads and cold drinks.</div>
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Practice Nadi Shodhana (alternate nostril breathing) for 10 minutes each morning.</div>
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Go to bed by 10pm and avoid screens after 9pm to calm Vata energy.</div>
+            <div class="dosha-tip-item"><div class="tip-dot"></div>Ashwagandha and Shatavari are long-term herbs that support Vata balance.</div>
+            {% elif latest_dosha == 'pitta' %}
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#f59e0b;"></div>Begin your morning with a glass of room-temperature water with lime — not hot.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#f59e0b;"></div>Include bitter greens (kale, neem), sweet fruits, and cooling herbs like coriander.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#f59e0b;"></div>Practise Sheetali pranayama (cooling breath) to reduce internal heat.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#f59e0b;"></div>Avoid exercising during peak sun hours. Prefer morning or evening workouts.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#f59e0b;"></div>Amalaki (Amla) and Brahmi are excellent daily supplements for Pitta types.</div>
+            {% else %}
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#3b82f6;"></div>Start every morning with warm ginger-honey water to stimulate Kapha metabolism.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#3b82f6;"></div>Eat light, warm, and spiced meals. Avoid dairy, excessive sweets, and fried foods.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#3b82f6;"></div>Exercise vigorously for at least 30 minutes daily to counter Kapha's tendency towards sluggishness.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#3b82f6;"></div>Practice Kapalabhati (skull-shining breath) to energise and cleanse the respiratory system.</div>
+            <div class="dosha-tip-item"><div class="tip-dot" style="background:#3b82f6;"></div>Trikatu and Triphala are key long-term herbal supplements for Kapha constitution.</div>
+            {% endif %}
+            <div class="mt-3 pt-3 border-top text-center" style="border-color:var(--border) !important;">
+                <a href="{% url 'book_appointment' %}" class="btn btn-outline" style="font-size:0.85rem;width:100%;">Start New Treatment Cycle →</a>
+            </div>
+        </div>
+
         {% endif %}
     </div>
 </div>
 
+
 <!-- ==================== Previous Treatments Section ==================== -->
 {% if previous_cycles %}
-<div class="mt-5">
+<div class="mt-5" id="treatmentHistory">
     <div class="d-flex align-items-center gap-3 mb-4">
         <h2 class="mb-0">Treatment History</h2>
         <span class="badge rounded-pill" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:var(--primary);padding:0.2rem 0.7rem;font-size:0.8rem;">{{ previous_cycles|length }} completed</span>
