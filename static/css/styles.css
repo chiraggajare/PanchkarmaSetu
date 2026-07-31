@@ -229,12 +229,7 @@ a {
 }
 
 .glass-card::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
-    opacity: 0.9;
+    content: none;
 }
 
 .glass-card:hover {

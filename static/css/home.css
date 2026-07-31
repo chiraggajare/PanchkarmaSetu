@@ -329,20 +329,32 @@ body.home-page {
 .benefit-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.6rem;
-    text-align: left;
+    border-radius: 16px;
+    padding: 2rem 1.6rem;
+    text-align: center;
     transition: transform .3s, box-shadow .3s, border-color .3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .benefit-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.2);
-    border-color: rgba(16, 185, 129, 0.25);
+    transform: translateY(-6px);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+    border-color: rgba(16, 185, 129, 0.3);
 }
 
 .benefit-icon {
-    margin-bottom: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin-bottom: 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .benefit-card h3 {
