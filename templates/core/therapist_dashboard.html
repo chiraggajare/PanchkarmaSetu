@@ -9,8 +9,8 @@
             Your Average Patient Rating</p>
         <div class="d-flex align-items-center gap-2">
             {% for i in "12345" %}
-            {% if forloop.counter <= avg_therapist_rating %}<span style="color:var(--accent);font-size:1.3rem;">★</span>
-            {% else %}<span style="color:var(--border);font-size:1.3rem;">★</span>
+            {% if forloop.counter <= avg_therapist_rating %}<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="1" style="vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            {% else %}<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1" style="vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>{% endif %}
             {% endif %}
             {% endfor %}
             <span class="fw-bold ms-1" style="font-size:1.4rem;color:var(--accent);">{{ avg_therapist_rating }}</span>
@@ -87,14 +87,14 @@
             <h4 class="mb-2" style="font-size:0.9rem;color:var(--text-muted);">Daily Sessions (Detailed Vitals)</h4>
             <div class="d-flex flex-column gap-2 mb-3">
                 {% for att in cycle.attendances.all|dictsort:"date" %}
-                <details class="rounded-3 border" style="background:rgba(15,23,42,0.4);border-color:var(--border) !important;">
+                <details class="rounded-3 border" style="background:rgba(255,252,244,0.82);border-color:var(--border) !important;">
                     <summary class="d-flex justify-content-between align-items-center px-3 py-3 fw-medium" style="cursor:pointer;font-size:0.9rem;list-style:none;">
                         <span>Day {{ forloop.counter }} &bull; {{ att.date|date:'M d, Y' }}</span>
                         <span class="badge" style="{% if att.is_attended %}background:var(--primary);color:white;{% else %}background:var(--booked-slot);color:var(--text-muted);{% endif %}">
-                            {% if att.is_attended %}Attended ✓{% else %}Pending{% endif %}
+                            {% if att.is_attended %}Attended <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>{% else %}Pending{% endif %}
                         </span>
                     </summary>
-                    <div class="px-3 py-3 border-top" style="border-color:var(--border) !important;background:rgba(30,41,59,0.3);">
+                    <div class="px-3 py-3 border-top" style="border-color:var(--border) !important;background:rgba(255,247,232,0.82);">
                         <form method="post" action="{% url 'mark_attendance' cycle.id %}">
                             {% csrf_token %}
                             <input type="hidden" name="date" value="{{ att.date|date:'Y-m-d' }}">
@@ -142,7 +142,7 @@
                     onsubmit="return confirm('End treatment cycle for {{ cycle.patient.username }}? The patient will then submit their feedback.');">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline w-100" style="color:var(--accent);border-color:var(--accent);">
-                        ✓ Mark Complete &amp; End Cycle
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg> Mark Complete &amp; End Cycle
                     </button>
                 </form>
             </div>
@@ -178,15 +178,14 @@
                     <div class="text-end">
                         <div class="d-flex gap-1 justify-content-end">
                             {% for i in "12345" %}
-                            {% if review.therapist_rating and forloop.counter <= review.therapist_rating %}<span style="color:var(--accent);font-size:0.95rem;">★</span>
-                            {% else %}<span style="color:var(--border);font-size:0.95rem;">★</span>
-                            {% endif %}
+                            {% if review.therapist_rating and forloop.counter <= review.therapist_rating %}<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="1" style="vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            {% else %}<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1" style="vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>{% endif %}
                             {% endfor %}
                         </div>
                         <p class="mt-1 mb-0" style="font-size:0.75rem;color:var(--text-muted);">
                             Overall:
                             {% if review.overall_rating %}
-                            {% for i in "12345" %}{% if forloop.counter <= review.overall_rating %}★{% else %}☆{% endif %}{% endfor %}
+                            {% for i in "12345" %}{% if forloop.counter <= review.overall_rating %}<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="1" style="vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>{% else %}<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1" style="vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>{% endif %}{% endfor %}
                             {% else %} — {% endif %}
                         </p>
                     </div>

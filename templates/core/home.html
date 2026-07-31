@@ -9,8 +9,8 @@
     <meta name="description"
         content="PanchkarmaSetu is a comprehensive Panchakarma management platform connecting patients with certified Ayurvedic therapists for personalized detoxification and healing journeys.">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2">
-    <link rel="stylesheet" href="{% static 'css/home.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=7">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}?v=4">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 
@@ -19,7 +19,9 @@
     <!-- ── NAV ── -->
     <nav class="home-nav">
         <div class="home-nav-inner">
-            <a href="{% url 'home' %}" class="nav-brand">Panchkarma<span>Setu</span></a>
+            <a href="{% url 'home' %}" class="nav-brand">
+                <img src="{% static 'images/panchkarmalogo_trans.png' %}?v=1" alt="PanchkarmaSetu Logo" style="height:36px;width:36px;object-fit:contain;margin-right:0.4rem;">Panchkarma<span>Setu</span>
+            </a>
             <div class="nav-links">
                 {% if user.is_authenticated %}
                 <a href="{% url 'dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
@@ -90,7 +92,7 @@
                     <p>Corrects Vata, Pitta &amp; Kapha imbalances — the root of most chronic disease.</p>
                 </div>
                 <div class="benefit-card scroll-reveal">
-                    <div class="benefit-icon"><i data-lucide="shield" style="width:26px;height:26px;color:#34d399;"></i></div>
+                    <div class="benefit-icon"><i data-lucide="shield" style="width:26px;height:26px;color:var(--primary);"></i></div>
                     <h3>Immune Strengthening</h3>
                     <p>Revitalises Ojas to build resilience, energy, and immune response.</p>
                 </div>
@@ -100,7 +102,7 @@
                     <p>Calms the nervous system and brings deep psychological peace.</p>
                 </div>
                 <div class="benefit-card scroll-reveal">
-                    <div class="benefit-icon"><i data-lucide="activity" style="width:26px;height:26px;color:#f87171;"></i></div>
+                    <div class="benefit-icon"><i data-lucide="activity" style="width:26px;height:26px;color:var(--rose);"></i></div>
                     <h3>Pain Management</h3>
                     <p>Effective for arthritis, back pain, and musculoskeletal conditions.</p>
                 </div>
@@ -129,7 +131,7 @@
                 </div>
 
                 <div class="cashback-tier cashback-silver scroll-reveal">
-                    <div class="cashback-pct" style="color:#94a3b8;">20%</div>
+                    <div class="cashback-pct" style="color:var(--secondary);">20%</div>
                     <div class="cashback-tier-label">Cash Back</div>
                     <p class="cashback-desc" style="font-size:1rem;color:var(--text-main);font-weight:500;">Get 20% cash back on 90% completion</p>
                 </div>

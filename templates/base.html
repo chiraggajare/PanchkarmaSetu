@@ -7,20 +7,24 @@
     <title>Panchkarma Setu | Wellness Platform</title>
     {% load static %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=7">
 </head>
 
 <body>
-    <div class="container">
+    <div class="app-bg app-bg-a"></div>
+    <div class="app-bg app-bg-b"></div>
+    <div class="app-shell">
         <nav class="navbar">
-            <a href="{% url 'dashboard' %}" class="nav-brand">Panchkarma<span>Setu</span></a>
+            <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}" class="nav-brand">
+                <img src="{% static 'images/panchkarmalogo_trans.png' %}?v=1" alt="PanchkarmaSetu Logo" style="height:36px;width:36px;object-fit:contain;margin-right:0.4rem;">Panchkarma<span>Setu</span>
+            </a>
             <div class="nav-links">
                 {% if user.is_authenticated %}
                 <div class="d-flex gap-3 align-items-center">
                     <!-- Notifications Dropdown -->
                     <div class="position-relative d-flex align-items-center" id="notificationWrapper">
                         <div id="notificationBell" class="position-relative d-flex align-items-center" style="cursor:pointer;font-size:1.2rem;">
-                            🔔
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                             {% if user.notifications.count > 0 %}
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.65rem;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;">
                                 {{ user.notifications.count }}
@@ -29,7 +33,7 @@
                         </div>
 
                         <!-- Dropdown Content -->
-                        <div id="notificationDropdown" class="position-absolute border rounded-3 overflow-hidden" style="display:none;top:130%;right:0;width:300px;background:#0f172a;border-color:var(--border) !important;box-shadow:0 10px 25px rgba(0,0,0,0.8);z-index:10000;">
+                        <div id="notificationDropdown" class="notification-panel position-absolute border rounded-3 overflow-hidden" style="display:none;top:130%;right:0;width:300px;z-index:10000;">
                             <div class="px-3 py-2 border-bottom" style="background:rgba(255,255,255,0.03);border-color:var(--border) !important;">
                                 <h4 class="mb-0" style="font-size:0.9rem;">Recent Notifications</h4>
                             </div>
@@ -70,15 +74,15 @@
             <div class="mb-4">
                 {% for message in messages %}
                 {% if message.tags == 'success' %}
-                <div class="d-flex align-items-center gap-2 rounded-3 mb-2 px-4 py-3 fw-medium" style="font-size:0.92rem;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#34d399;">
+                <div class="d-flex align-items-center gap-2 rounded-3 mb-2 px-4 py-3 fw-medium" style="font-size:0.92rem;background:#eef8f2;border:1px solid rgba(7,95,77,0.28);color:var(--primary);">
                     {{ message }}
                 </div>
                 {% elif message.tags == 'error' %}
-                <div class="d-flex align-items-center gap-2 rounded-3 mb-2 px-4 py-3 fw-medium" style="font-size:0.92rem;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:#f87171;">
+                <div class="d-flex align-items-center gap-2 rounded-3 mb-2 px-4 py-3 fw-medium" style="font-size:0.92rem;background:#fff0f2;border:1px solid rgba(159,37,62,0.28);color:var(--rose);">
                     {{ message }}
                 </div>
                 {% else %}
-                <div class="d-flex align-items-center gap-2 rounded-3 mb-2 px-4 py-3 fw-medium" style="font-size:0.92rem;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);color:#fbbf24;">
+                <div class="d-flex align-items-center gap-2 rounded-3 mb-2 px-4 py-3 fw-medium" style="font-size:0.92rem;background:#fff5e8;border:1px solid rgba(143,77,20,0.28);color:var(--accent);">
                     {{ message }}
                 </div>
                 {% endif %}

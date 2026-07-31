@@ -233,7 +233,7 @@
     <div class="glass-card" style="max-width:460px;width:100%;background:var(--bg-card);border:2px solid var(--primary);">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="mb-0" style="color:var(--primary);">Add New User</h3>
-            <button onclick="document.getElementById('addUserModal').style.display='none'" class="btn p-0 border-0 bg-transparent" style="color:var(--text-muted);font-size:1.3rem;cursor:pointer;">✕</button>
+            <button onclick="document.getElementById('addUserModal').style.display='none'" class="btn p-0 border-0 bg-transparent" style="color:var(--text-muted);font-size:1.3rem;cursor:pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         <form method="post" action="{% url 'add_user' %}">
             {% csrf_token %}
