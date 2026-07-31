@@ -198,7 +198,7 @@
         <h2 class="mb-4">Your Health Journey</h2>
 
         {% if pending_diagnosis %}
-        <div class="glass-card mb-4 dash-card-anim" style="border-left:4px solid var(--accent);">
+        <div class="glass-card mb-4 dash-card-anim">
             <h3>Action Required: Diagnosis Ready</h3>
             <p>Your therapist has completed your diagnosis. You've been assessed as having a <strong>{{ pending_diagnosis.get_dosha_display }}</strong> dosha.</p>
             <p class="mt-2" style="color:var(--text-muted);">{{ pending_diagnosis.diagnosis_result|truncatewords:20 }}</p>
@@ -239,7 +239,7 @@
         {% endif %}
 
         {% if completed_cycle_awaiting_feedback %}
-        <div class="glass-card mb-4 dash-card-anim" style="border-left:4px solid var(--accent);">
+        <div class="glass-card mb-4 dash-card-anim">
             {% if completed_cycle_awaiting_feedback.is_cancelled_midway %}
             <h3 style="color:#ef4444;">Treatment Concluded Incompletely</h3>
             <p class="mt-2" style="color:var(--text-muted);">

@@ -139,6 +139,8 @@ a {
 
 /* Navigation */
 .navbar {
+    position: relative;
+    z-index: 9999;
     display: flex;
     justify-content: space-between;
     align-items: center;

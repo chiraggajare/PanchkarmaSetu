@@ -13,19 +13,19 @@
 
     <!-- Stats Cards -->
     <div class="dashboard-grid mb-4" style="grid-template-columns: repeat(4, 1fr);">
-        <div class="glass-card text-center" style="border-bottom: 4px solid var(--primary);">
+        <div class="glass-card text-center">
             <h4 style="color: var(--text-muted);" class="mb-2">Completed Cycles</h4>
             <h2 style="font-size: 2.5rem;" class="mb-0">{{ total_completed }}</h2>
         </div>
-        <div class="glass-card text-center" style="border-bottom: 4px solid var(--accent);">
+        <div class="glass-card text-center">
             <h4 style="color: var(--text-muted);" class="mb-2">Avg Satisfaction</h4>
             <h2 style="font-size: 2.5rem; color: var(--accent);" class="mb-0">{{ avg_rating }} <span style="font-size: 1.5rem;">/ 5</span></h2>
         </div>
-        <div class="glass-card text-center" style="border-bottom: 4px solid var(--secondary);">
+        <div class="glass-card text-center">
             <h4 style="color: var(--text-muted);" class="mb-2">Active Therapists</h4>
             <h2 style="font-size: 2.5rem;" class="mb-0">{{ therapists.count }}</h2>
         </div>
-        <div class="glass-card text-center" style="border-bottom: 4px solid #c084fc;">
+        <div class="glass-card text-center">
             <h4 style="color: var(--text-muted);" class="mb-2">Total Patients</h4>
             <h2 style="font-size: 2.5rem; color: #c084fc;" class="mb-0">{{ patients.count }}</h2>
         </div>
