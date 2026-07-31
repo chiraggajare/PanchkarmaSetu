@@ -828,3 +828,252 @@ main [class*="rounded-3"][style*="border:1px"] {
         overflow-wrap: anywhere;
     }
 }
+
+/* ── Therapist Analytics Section ── */
+.analytics-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.period-pills {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.period-pill {
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    letter-spacing: 0.3px;
+}
+
+.period-pill:hover {
+    background: rgba(16,185,129,0.08);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.period-pill.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(16,185,129,0.25);
+}
+
+.custom-range-inputs {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.custom-range-inputs input[type="date"] {
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-main);
+    font-size: 0.8rem;
+    outline: none;
+}
+
+.custom-range-inputs input[type="date"]:focus {
+    border-color: var(--primary);
+}
+
+/* Therapist card grid */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.2rem;
+}
+
+/* Accent colours per therapist (cycling) */
+.analytics-card { --t-accent: var(--primary); }
+.analytics-card[data-accent="0"] { --t-accent: #10b981; }
+.analytics-card[data-accent="1"] { --t-accent: #3b82f6; }
+.analytics-card[data-accent="2"] { --t-accent: #8b5cf6; }
+.analytics-card[data-accent="3"] { --t-accent: #f59e0b; }
+.analytics-card[data-accent="4"] { --t-accent: #ec4899; }
+.analytics-card[data-accent="5"] { --t-accent: #06b6d4; }
+
+.analytics-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+}
+
+.analytics-card-accent {
+    height: 4px;
+    background: var(--t-accent);
+    border-radius: 18px 18px 0 0;
+    opacity: 0.9;
+}
+
+.analytics-card-body {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+/* Avatar */
+.therapist-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--t-accent), color-mix(in srgb, var(--t-accent) 60%, #000));
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.analytics-therapist-name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+
+.analytics-therapist-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+/* Mini stat row */
+.analytics-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+.analytics-stat {
+    background: rgba(16,185,129,0.06);
+    border-radius: 10px;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid rgba(16,185,129,0.1);
+}
+
+.analytics-stat-val {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--t-accent);
+    line-height: 1;
+}
+
+.analytics-stat-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 3px;
+}
+
+/* Star rating display */
+.analytics-stars {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.analytics-star {
+    width: 13px;
+    height: 13px;
+    border-radius: 2px;
+}
+
+/* Completion rate progress bar */
+.completion-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.completion-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.73rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.completion-bar-track {
+    height: 6px;
+    background: rgba(16,185,129,0.1);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.completion-bar-fill {
+    height: 100%;
+    background: var(--t-accent);
+    border-radius: 999px;
+    transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* Sparkline chart container */
+.sparkline-wrapper {
+    height: 60px;
+    position: relative;
+    margin-top: auto;
+}
+
+/* No-data state */
+.analytics-no-data {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+/* Skeleton loaders */
+.analytics-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem;
+}
+
+@keyframes shimmer {
+    0% { background-position: -300px 0; }
+    100% { background-position: 300px 0; }
+}
+
+.skeleton-line {
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--border) 25%, rgba(255,255,255,0.15) 50%, var(--border) 75%);
+    background-size: 600px 100%;
+    animation: shimmer 1.4s infinite linear;
+}
+
+.skeleton-line.tall { height: 20px; }
+.skeleton-line.short { width: 60%; }
+
+@media (max-width: 600px) {
+    .analytics-grid { grid-template-columns: 1fr; }
+    .analytics-header { flex-direction: column; align-items: flex-start; }
+}

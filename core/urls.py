@@ -30,4 +30,5 @@ urlpatterns = [
     path('head/assign/', views.assign_therapist, name='assign_therapist'),
     path('head/add-user/', views.add_user, name='add_user'),
     path('head/remove-user/<int:user_id>/', views.remove_user, name='remove_user'),
+    path('head/analytics/', views.therapist_analytics, name='therapist_analytics'),
 ]

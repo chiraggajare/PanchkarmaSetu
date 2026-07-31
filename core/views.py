@@ -288,6 +288,87 @@ def render_head_dashboard(request):
     }
     return render(request, 'core/head_dashboard.html', context)
 
+
+@login_required
+def therapist_analytics(request):
+    """JSON API: returns per-therapist analytics filtered by time period."""
+    if request.user.role != 'centre_head':
+        return JsonResponse({'error': 'Forbidden'}, status=403)
+
+    period = request.GET.get('period', 'month')  # week | month | year | custom
+    today = date.today()
+
+    if period == 'week':
+        date_from = today - timedelta(days=7)
+        date_to = today
+    elif period == 'year':
+        date_from = today - timedelta(days=365)
+        date_to = today
+    elif period == 'custom':
+        try:
+            date_from = datetime.strptime(request.GET.get('date_from', ''), '%Y-%m-%d').date()
+            date_to   = datetime.strptime(request.GET.get('date_to',   ''), '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            return JsonResponse({'error': 'Invalid date range'}, status=400)
+    else:  # default: month
+        date_from = today - timedelta(days=30)
+        date_to = today
+
+    therapists = User.objects.filter(role='therapist')
+    result = []
+
+    for t in therapists:
+        # Cycles completed by this therapist in the window
+        cycles_in_window = TreatmentCycle.objects.filter(
+            therapist=t,
+            start_date__gte=date_from,
+            start_date__lte=date_to,
+        )
+        completed_in_window = cycles_in_window.filter(is_active=False)
+        started_count = cycles_in_window.count()
+        completed_count = completed_in_window.count()
+
+        # Ratings only from cycles that have feedback
+        rated_cycles = completed_in_window.filter(therapist_rating__isnull=False)
+        overall_rated = completed_in_window.filter(overall_rating__isnull=False)
+
+        agg_therapist = rated_cycles.aggregate(avg=Avg('therapist_rating'))['avg']
+        agg_overall   = overall_rated.aggregate(avg=Avg('overall_rating'))['avg']
+
+        completion_rate = round((completed_count / started_count * 100), 1) if started_count > 0 else 0
+
+        # Daily session counts for sparkline (group by start_date in Python to avoid TruncDate/SQLite issues)
+        from collections import Counter
+        date_counts = Counter()
+        for cyc in completed_in_window.values_list('start_date', flat=True):
+            date_counts[str(cyc)] += 1
+        daily_sessions = [
+            {'date': d, 'count': c}
+            for d, c in sorted(date_counts.items())
+        ]
+
+        # Rating distribution (1-5) for therapist_rating
+        rating_dist = [0, 0, 0, 0, 0]
+        for cyc in rated_cycles:
+            if cyc.therapist_rating and 1 <= cyc.therapist_rating <= 5:
+                rating_dist[cyc.therapist_rating - 1] += 1
+
+        result.append({
+            'id': t.id,
+            'username': t.username,
+            'full_name': t.get_full_name() or t.username,
+            'sessions_started': started_count,
+            'sessions_completed': completed_count,
+            'completion_rate': completion_rate,
+            'avg_therapist_rating': round(agg_therapist, 2) if agg_therapist else None,
+            'avg_overall_rating': round(agg_overall, 2) if agg_overall else None,
+            'total_reviews': rated_cycles.count(),
+            'daily_sessions': daily_sessions,
+            'rating_distribution': rating_dist,
+        })
+
+    return JsonResponse({'therapists': result, 'period': period, 'date_from': str(date_from), 'date_to': str(date_to)})
+
 @login_required
 def book_appointment(request):
     if request.method == 'POST':
