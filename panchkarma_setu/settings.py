@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-)hui97=r7y(1k!3$-l!!kp57*2i=n#anc!4r_+aw=(%t+ucu_e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -123,6 +124,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 AUTH_USER_MODEL = 'core.User'
 LOGIN_REDIRECT_URL = '/dashboard/'
@@ -139,9 +142,4 @@ EMAIL_HOST_PASSWORD = 'your-app-password' # CHANGE THIS
 DEFAULT_FROM_EMAIL = 'Panchkarma Setu <noreply@panchkarmasetu.com>'
 
 GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY', '')
-GROQ_API_KEY   = os.environ.get('GROQ_API_KEY', '')
-
-
-
-
 

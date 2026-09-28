@@ -14,21 +14,17 @@ logger = logging.getLogger(__name__)
 def generate_patient_narrative(cycle):
     """
     Generates a personalized, comprehensive Ayurvedic wellness report narrative
-    for a completed TreatmentCycle. Automatically routes to Groq (Llama-3.3-70b)
-    or Google Gemini (gemini-2.0-flash) based on API key format.
+    for a completed TreatmentCycle using Google Gemini (gemini-2.0-flash).
     """
     # 1. Retrieve the API Key
-    # Checks GROQ_API_KEY first, then GOOGLE_API_KEY env or Django settings
     api_key = (
-        os.environ.get('GROQ_API_KEY') or
-        getattr(settings, 'GROQ_API_KEY', '') or
-        os.environ.get('GOOGLE_API_KEY') or 
+        os.environ.get('GOOGLE_API_KEY') or
         getattr(settings, 'GOOGLE_API_KEY', '')
     )
     
     if not api_key:
-        logger.error("No API key configured for Groq or Gemini.")
-        return get_fallback_report(cycle, "API Key is missing. Please set GROQ_API_KEY or GOOGLE_API_KEY environment variable.")
+        logger.error("No Gemini API key configured.")
+        return get_fallback_report(cycle, "API Key is missing. Please set GOOGLE_API_KEY environment variable.")
 
     # 2. Compile Context Data
     patient = cycle.patient
@@ -107,64 +103,36 @@ INSTRUCTIONS FOR REPORT GENERATION:
 4. Total length should be around 350 to 500 words. Do not use generic placeholders; speak directly about this specific patient's case and metrics.
 """
 
-    # 4. Route based on key prefix (gsk_ = Groq, otherwise Gemini)
-    if api_key.startswith('gsk_'):
-        import requests
-        logger.info("Routing request to Groq API using Llama-3.3-70b-versatile")
-        url = 'https://api.groq.com/openai/v1/chat/completions'
-        headers = {
-            'Authorization': f'Bearer {api_key}',
-            'Content-Type': 'application/json'
-        }
-        data = {
-            'model': 'llama-3.3-70b-versatile',
-            'messages': [{'role': 'user', 'content': prompt}],
-            'temperature': 0.7
-        }
+    # 4. Call Google Gemini API — try gemini-3.8-flash first, fall back to gemini-3.8-pro
+    logger.info("Routing request to Google Gemini API")
+    models_to_try = ['gemini-3.8-flash', 'gemini-3.8-pro']
+    client = genai.Client(api_key=api_key)
+    last_error = None
+    for model_name in models_to_try:
         try:
-            r = requests.post(url, headers=headers, json=data, timeout=30)
-            if r.status_code == 200:
-                res = r.json()
-                return res['choices'][0]['message']['content'].strip()
-            else:
-                err_msg = r.json().get('error', {}).get('message', 'Unknown Groq Error')
-                logger.error(f"Groq API returned status {r.status_code}: {err_msg}")
-                return get_fallback_report(cycle, f"Groq API Error: {err_msg[:200]}")
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+            )
+            logger.info(f"AI report generated successfully using model: {model_name}")
+            return response.text
+        except APIError as e:
+            err_str = str(e)
+            logger.warning(f"Model {model_name} failed: {err_str[:200]}")
+            # 429 quota exhaustion — try next model
+            if '429' in err_str or 'RESOURCE_EXHAUSTED' in err_str:
+                last_error = f"Quota exhausted on {model_name}."
+                continue
+            # Any other API error — bail out immediately
+            return get_fallback_report(cycle, f"Gemini API Error: {err_str[:300]}")
         except Exception as e:
-            logger.error(f"Failed to call Groq API: {e}")
-            return get_fallback_report(cycle, f"Failed to call Groq API: {str(e)[:200]}")
-            
-    else:
-        logger.info("Routing request to Google Gemini API")
-        # Call the Gemini API — try gemini-2.0-flash first, fall back to gemini-1.5-flash
-        models_to_try = ['gemini-2.0-flash', 'gemini-1.5-flash']
-        client = genai.Client(api_key=api_key)
-        last_error = None
-        for model_name in models_to_try:
-            try:
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=prompt,
-                )
-                logger.info(f"AI report generated successfully using model: {model_name}")
-                return response.text
-            except APIError as e:
-                err_str = str(e)
-                logger.warning(f"Model {model_name} failed: {err_str[:200]}")
-                # 429 quota exhaustion — try next model
-                if '429' in err_str or 'RESOURCE_EXHAUSTED' in err_str:
-                    last_error = f"Quota exhausted on {model_name}."
-                    continue
-                # Any other API error — bail out immediately
-                return get_fallback_report(cycle, f"Gemini API Error: {err_str[:300]}")
-            except Exception as e:
-                logger.error(f"Unexpected error with model {model_name}: {e}")
-                return get_fallback_report(cycle, f"Unexpected error: {str(e)[:300]}")
+            logger.error(f"Unexpected error with model {model_name}: {e}")
+            return get_fallback_report(cycle, f"Unexpected error: {str(e)[:300]}")
 
-        hint = ("All Gemini models are quota-exhausted for this API key. "
-                "Go to https://aistudio.google.com/ and create a fresh API key, "
-                "or enable billing to increase your quota.")
-        return get_fallback_report(cycle, hint)
+    hint = ("All Gemini models are quota-exhausted for this API key. "
+            "Go to https://aistudio.google.com/ and create a fresh API key, "
+            "or enable billing to increase your quota.")
+    return get_fallback_report(cycle, hint)
 
 def get_fallback_report(cycle, error_detail=""):
     """
