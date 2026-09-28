@@ -877,8 +877,9 @@
     }
 
     // If messages exist on page load, auto-switch to Add User tab to show feedback
-    {% if messages %}
-    switchTab('sec-add-user');
-    {% endif %}
+    const hasMessages = "{{ messages|length|default:0 }}" !== "0";
+    if (hasMessages) {
+        switchTab('sec-add-user');
+    }
 </script>
 {% endblock %}
