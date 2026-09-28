@@ -1344,9 +1344,11 @@ body.home-page {
 
 @media (max-width: 768px) {
     .home-nav {
-        left: 10px;
-        right: 10px;
-        border-radius: 22px;
+        left: 0;
+        right: 0;
+        top: 0;
+        border-radius: 0;
+        background: rgba(255, 250, 240, 0.96) !important;
     }
 
     .hero-section {
@@ -1404,24 +1406,65 @@ body.home-page {
     .v-timeline-content {
         border-radius: 18px;
     }
+
+    .v-timeline::after {
+        left: 31px;
+    }
+    
+    .v-timeline-item {
+        width: 100%;
+        padding-left: 70px;
+        padding-right: 15px;
+    }
+    
+    .v-timeline-item.left,
+    .v-timeline-item.right {
+        left: 0;
+    }
+    
+    .v-timeline-item::after,
+    .v-timeline-item.right::after,
+    .v-timeline-item.left::after {
+        left: 21px;
+    }
 }
 
 @media (max-width: 520px) {
-    .home-nav-inner,
-    .home-nav .nav-links {
-        gap: 0.65rem;
-        flex-wrap: wrap;
+    .home-nav {
+        padding: 0.8rem 0.6rem;
+    }
+
+    .home-nav-inner {
+        gap: 0.4rem;
+        flex-wrap: nowrap;
     }
 
     .home-nav .nav-links {
-        justify-content: flex-start;
-        width: 100%;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+        width: auto;
+    }
+
+    .nav-brand {
+        font-size: 1.25rem;
+    }
+    
+    .nav-brand img {
+        height: 32px !important;
+        width: 32px !important;
+        margin-right: 0.3rem !important;
+    }
+
+    .nav-link-plain {
+        margin-right: 0;
+        font-size: 0.95rem;
     }
 
     .home-nav .btn {
-        min-height: 38px;
-        padding: 0.58rem 0.85rem;
-        font-size: 0.84rem;
+        min-height: 36px;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.9rem;
     }
 
     .hero-section::before {
